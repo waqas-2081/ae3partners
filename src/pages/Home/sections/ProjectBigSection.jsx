@@ -1,52 +1,66 @@
-import { Link } from 'react-router-dom';
-import { DUBLIN_SHERIFF_DETAIL_PATH } from '../../Projects/ProjectDetailPage';
 import './ProjectBigSection.css';
 
 const P = process.env.PUBLIC_URL || '';
 
-export default function ProjectBigSection() {
-  const projects = [
-    {
-      n: '01',
-      img: `${P}/assets/newimages/project2.jpg`,
-      title: 'Dublin Transit Center Parking Garage',
-      detailPath: DUBLIN_SHERIFF_DETAIL_PATH,
-    },
-    { n: '02', img: `${P}/assets/newimages/credit.jpg`, title: 'Patelco Credit Union and Sprinkles' },
-    { n: '03', img: `${P}/assets/newimages/okland.jpg`, title: 'Oakland International Airport' },
-  ];
+const projects = [
+  {
+    n: '01',
+    img: `${P}/assets/newimages/featured-projects/college-of-alameda-aviation.png`,
+    title: 'College of Alameda Aviation Complex',
+    location: 'Alameda, California',
+    description:
+      'A new gateway for aviation education, providing students with hands-on training, modern learning environments, and pathways to careers in one of the region\'s most vital industries.',
+  },
+  {
+    n: '02',
+    img: `${P}/assets/newimages/featured-projects/wlac-plant-facilities.png`,
+    title: 'WLAC Plant Facilities & Shops Replacement',
+    location: 'Los Angeles, California',
+    description:
+      'Designed to support the people who keep the campus running, this facility equips students and staff with the tools, training, and infrastructure needed to maintain and improve the college for generations to come.',
+    reverse: true,
+  },
+  {
+    n: '03',
+    img: `${P}/assets/newimages/featured-projects/liberation-park.png`,
+    title: 'Liberation Park Market Hall & Communal Courtyard',
+    location: 'Oakland, California',
+    description:
+      'Created as a place to gather, celebrate, and grow, Liberation Park provides local entrepreneurs, artists, and residents with a vibrant community destination rooted in culture, connection, and opportunity.',
+  },
+];
 
+export default function ProjectBigSection() {
   return (
-    <section className="ae3-project-big project-section-4 pt-0 pb-0 overflow-hidden">
-      <div className="project-item-wrap-2">
-        {projects.map((p) => (
-          <div className="project-item-2 project-item-4" key={p.title}>
-            <div className="project-thumb">
-              <img src={p.img} alt="project" />
-              {/* <ul>
-                <li>Featured Project</li>
-                <li>California</li>
-              </ul> */}
-              <span className="number">{p.n}</span>
+    <section className="fp" aria-label="Featured projects">
+    
+
+      <div className="fp__list">
+        {projects.map((project) => (
+          <article
+            key={project.title}
+            className={`fp__row${project.reverse ? ' fp__row--reverse' : ''}`}
+          >
+            <div className="fp__content">
+              <span className="fp__num" aria-hidden="true">
+                {project.n}
+              </span>
+              <div className="fp__location">
+                <span className="fp__location-dot" />
+                {project.location}
+              </div>
+              <h3 className="fp__project-title">{project.title}</h3>
+              <p className="fp__desc">{project.description}</p>
             </div>
-            <div className="project-content">
-              <h3 className="title">
-                {p.detailPath ? (
-                  <Link className="project-title-link" to={p.detailPath}>
-                    {p.title}
-                  </Link>
-                ) : (
-                  p.title
-                )}
-              </h3>
-              <p>
-                AE3 Partners <br /> Architecture + CM
-              </p>
+
+            <div className="fp__media">
+              <div className="fp__img-wrap">
+                <img src={project.img} alt={project.title} loading="lazy" />
+              </div>
             </div>
-          </div>
+          </article>
         ))}
       </div>
     </section>
   );
 }
-
