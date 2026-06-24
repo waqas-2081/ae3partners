@@ -14,40 +14,32 @@ const P = process.env.PUBLIC_URL || '';
 
 const publicImage = (file) => `${P}/assets/newimages/${file}`;
 
-/** Shown in the featured slider — aligns with [AE3 projects](https://www.ae3partners.com/projects). */
+/** Shown in the featured slider — same projects as home `ProjectBigSection`. */
 const FEATURED_PROJECTS = [
   {
-    id: 'feat-dublin-transit',
-    title: 'Dublin Transit Center Parking Garage',
-    tag: 'Civic + Commercial',
-    location: 'Dublin, CA',
-    year: '2024',
-    image: publicImage('project2.jpg')
+    id: 'feat-coalameda-aviation',
+    title: 'College of Alameda Aviation Complex',
+    location: 'Alameda, California',
+    description:
+      'A new gateway for aviation education, providing students with hands-on training, modern learning environments, and pathways to careers in one of the region\'s most vital industries.',
+    image: `${P}/assets/newimages/featured-projects/college-of-alameda-aviation.png`,
   },
   {
-    id: 'feat-liberation',
+    id: 'feat-wlac-plant',
+    title: 'WLAC Plant Facilities & Shops Replacement',
+    location: 'Los Angeles, California',
+    description:
+      'Designed to support the people who keep the campus running, this facility equips students and staff with the tools, training, and infrastructure needed to maintain and improve the college for generations to come.',
+    image: `${P}/assets/newimages/featured-projects/wlac-plant-facilities.png`,
+  },
+  {
+    id: 'feat-liberation-park',
     title: 'Liberation Park Market Hall & Communal Courtyard',
-    tag: 'Civic + Commercial',
-    location: 'East Oakland, CA',
-    year: '2025',
-    image: publicImage('project1.jpg')
+    location: 'Oakland, California',
+    description:
+      'Created as a place to gather, celebrate, and grow, Liberation Park provides local entrepreneurs, artists, and residents with a vibrant community destination rooted in culture, connection, and opportunity.',
+    image: `${P}/assets/newimages/featured-projects/liberation-park.png`,
   },
-  {
-    id: 'feat-moscone',
-    title: 'Moscone Convention Center Expansion',
-    tag: 'Civic + Commercial',
-    location: 'San Francisco, CA',
-    year: '2023',
-    image: publicImage('moco.jpg')
-  },
-  {
-    id: 'feat-merritt',
-    title: 'Merritt College Child Development Center',
-    tag: 'Education + Institutional',
-    location: 'Oakland, CA',
-    year: '2024',
-    image: publicImage('project4.jpg')
-  }
 ];
 
 /** @type {Array<{ id: string, category: ProjectCategory, title: string, location: string, year: string, excerpt: string, image: string }>} */
@@ -654,9 +646,7 @@ function projectImg(proj) {
 }
 
 const SLIDE_INTERVAL_MS = 5200;
-/** Featured slider: only first N from `FEATURED_PROJECTS` */
-const FEATURED_SLIDER_LIMIT = 2;
-const FEATURED_FOR_SLIDER = FEATURED_PROJECTS.slice(0, FEATURED_SLIDER_LIMIT);
+const FEATURED_FOR_SLIDER = FEATURED_PROJECTS;
 /** All-projects grid: max cards shown (per active tab) */
 const ALL_PROJECTS_GRID_LIMIT = 6;
 
@@ -849,20 +839,16 @@ export default function Projects() {
                       <img src={projectImg(proj)} alt="" />
                       <div className="pp-slide-overlay" />
                       <div className="pp-slide-content">
-                        <span className="pp-slide-tag">{proj.tag}</span>
+                        <span className="pp-slide-tag">{proj.location}</span>
                         <h3 className="pp-slide-title">{proj.title}</h3>
-                        <p className="pp-slide-meta">
-                          {proj.location} &nbsp;·&nbsp; {proj.year}
-                        </p>
-                        {projectHasDublinSheriffDetail(proj.id) ? (
-                          <Link className="pp-slide-link" to={DUBLIN_SHERIFF_DETAIL_PATH}>
-                            View project →
-                          </Link>
-                        ) : (
-                          <button type="button" className="pp-slide-link">
-                            View project →
-                          </button>
-                        )}
+                        <p className="pp-slide-meta">{proj.description}</p>
+                        <a
+                          href="#"
+                          className="pp-slide-link"
+                          onClick={(e) => e.preventDefault()}
+                        >
+                          View project →
+                        </a>
                       </div>
                     </article>
                   ))}
