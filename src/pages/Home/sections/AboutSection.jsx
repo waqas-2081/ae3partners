@@ -1,0 +1,65 @@
+const P = process.env.PUBLIC_URL || '';
+
+export default function AboutSection() {
+  return (
+    <section className="about-section overflow-hidden">
+      <div className="about-bg" data-background={`${P}/assets/img/bg-img/about-bg.png`}></div>
+      <div className="about-text">
+        <span>AE3</span>
+      </div>
+      <div className="container">
+        <div className="row align-items-center">
+          <div className="col-lg-6">
+            <div className="about-content white-content slide-anim" data-delay="0.3" data-offset="100" data-direction="left">
+              <div className="section-heading white-content mb-30">
+                <h4
+                  className="sub-heading"
+                  data-text-animation="fade-in-right"
+                  data-split="char"
+                  data-duration="0.9"
+                  data-stagger="0.03"
+                >
+                  Who We Are
+                </h4>
+                <h2 className="section-title cursor-effect">
+                  Designing for the 21st Century, <span>One Great Client at a Time</span>
+                </h2>
+              </div>
+              <ul className="about-list">
+                {[
+                  'Focused on your needs and outcomes',
+                  'Timeless, attractive, green design',
+                  'Delivering on budget and schedule',
+                  'Collaborative, ego-free team approach'
+                ].map((label) => (
+                  <li key={label}>
+                    <img src={`${P}/assets/img/icon/about-1.png`} alt="about" />
+                    {label}
+                  </li>
+                ))}
+              </ul>
+              <p>
+                AE3 Partners is a full service Architecture + Construction Management firm based in San Francisco, serving
+                clients throughout California with integrated design and delivery expertise.
+              </p>
+              <div className="about-btn">
+                <a href="/" onClick={(e) => e.preventDefault()} className="tl-primary-btn white-btn">
+                  Our Team{' '}
+                  <span className="icon">
+                    <i className="fa-regular fa-arrow-right"></i>
+                  </span>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="col-lg-6">
+            <div className="about-img slide-anim" data-delay="0.3" data-offset="100" data-direction="right">
+              <img src={`${P}/assets/newimages/whoweare2.jpg`} alt="" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+

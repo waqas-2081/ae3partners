@@ -1,0 +1,48 @@
+/* Overrides for long project titles — sit higher, smaller type, room to wrap */
+.ae3-project-big .project-item-2.project-item-4 .project-content {
+  bottom: 360px;
+  right: 120px;
+}
+
+.ae3-project-big .project-item-2.project-item-4 .project-content .title {
+  font-size: 78px;
+  line-height: 1;
+  font-weight: 600;
+}
+
+.ae3-project-big .project-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.ae3-project-big .project-title-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
+.ae3-project-big .project-item-2.project-item-4 .project-content p {
+  font-size: 14px;
+  line-height: 1.45;
+  margin-top: 10px;
+  opacity: 0.95;
+}
+
+@media only screen and (max-width: 992px) {
+  .ae3-project-big .project-item-2.project-item-4 .project-content {
+    bottom: 100px;
+    right: 24px;
+  }
+
+  .ae3-project-big .project-item-2.project-item-4 .project-content .title {
+    font-size: clamp(22px, 4.5vw, 34px);
+  }
+}
+
+@media only screen and (max-width: 767px) {
+  .ae3-project-big .project-item-2.project-item-4 .project-content {
+    bottom: 56px;
+    left: 20px;
+    right: 20px;
+    max-width: none;
+  }
+}

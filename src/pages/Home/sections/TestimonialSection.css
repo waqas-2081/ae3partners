@@ -1,0 +1,34 @@
+.testimonial-section .testimonial-section-headings {
+  align-items: center;
+  text-align: center;
+}
+
+.testimonial-section .testimonial-section-headings .section-title {
+  text-align: center;
+}
+
+.testimonial-section .testi-item .testi-author .author-img-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20%;
+  background: #fff;
+}
+
+.testimonial-section .testi-item .testi-author .author-img-google .fa-google {
+  font-size: 2.25rem;
+  line-height: 1;
+  color: #4285f4;
+}
+
+.testimonial-section .testi-carousel-wrap .testi-top-content .left-content .rating-list ul {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.testimonial-section .testi-carousel-wrap .testi-top-content .left-content .rating-list ul li {
+  flex: 0 0 auto;
+}
