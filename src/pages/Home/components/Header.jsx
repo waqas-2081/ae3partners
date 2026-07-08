@@ -5,9 +5,7 @@ import './Header.css';
 const P = process.env.PUBLIC_URL || '';
 
 
-const logoDefaultSrc = `${P}/assets/newimages/logo.png`;
-
-const logoStickySrc = `${P}/assets/newimages/logo.png`;
+const LOGO_SRC = `${P}/assets/newimages/ae3-logo.png`;
 
 export default function Header() {
   const { pathname } = useLocation();
@@ -25,16 +23,7 @@ export default function Header() {
             <div className="header-left-wrap">
               <div className="header-logo d-lg-block">
                 <Link to="/">
-                  <img
-                    className="header-logo-default"
-                    src={logoDefaultSrc}
-                    alt="AE3 Partners"
-                  />
-                  <img
-                    className="header-logo-sticky"
-                    src={logoStickySrc}
-                    alt="AE3 Partners"
-                  />
+                  <img src={LOGO_SRC} alt="AE3 Partners — Architecture + CM" />
                 </Link>
               </div>
               <div className="header-menu-wrap">

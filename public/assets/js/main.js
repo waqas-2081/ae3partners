@@ -18,110 +18,91 @@
 
         /* ===============================
         Smooth Preloader
+        Bar animation loops until React signals exit (ae3-preloader-exit).
         ================================*/
+        (function initAe3PreloaderBars() {
+            var innerBars = null;
+            var increment = 0;
+            var running = false;
+            var barTimeoutId = null;
 
-        var innerBars = document.querySelectorAll(".inner-bar");
-var increment = 0;
+            function queryBars() {
+                innerBars = document.querySelectorAll(".preloader .inner-bar");
+                return innerBars.length > 0;
+            }
 
-function animateBars() {
+            function resetBars() {
+                increment = 0;
+                if (!innerBars) return;
+                for (var i = 0; i < innerBars.length; i++) {
+                    gsap.set(innerBars[i], { width: "0%" });
+                }
+            }
 
-    /* loading bar animation */
-    for (var i = 0; i < 2; i++) {
+            function animateBars() {
+                if (!running || !innerBars || !innerBars.length) return;
 
-        var randomWidth = Math.floor(Math.random() * 101);
+                for (var i = 0; i < 2; i++) {
+                    var barIndex = i + increment;
+                    if (barIndex >= innerBars.length) break;
 
-        gsap.to(innerBars[i + increment], {
-            width: randomWidth + "%",
-            duration: 0.5,
-            ease: "none"
-        });
-    }
-
-    setTimeout(function () {
-
-        for (var i = 0; i < 2; i++) {
-
-            gsap.to(innerBars[i + increment], {
-                width: "100%",
-                duration: 0.5,
-                ease: "none"
-            });
-        }
-
-        increment += 2;
-
-        if (increment < innerBars.length) {
-
-            animateBars();
-
-        } else {
-
-            /* ===================================
-               PRELOADER EXIT TIMELINE
-            =================================== */
-
-            var preloaderTL = gsap.timeline();
-
-            /* 1️⃣ fade out preloader smoothly */
-            preloaderTL.to(".preloader", {
-                opacity: 0,
-                duration: 0.8,
-                ease: "power2.out"
-            });
-
-            /* 2️⃣ START SLIDER AFTER PRELOAD  ⭐ IMPORTANT */
-            preloaderTL.call(function () {
-
-                if (window.startSliderAfterPreload) {
-                    window.startSliderAfterPreload();
+                    gsap.to(innerBars[barIndex], {
+                        width: Math.floor(Math.random() * 101) + "%",
+                        duration: 0.5,
+                        ease: "none"
+                    });
                 }
 
-            });
+                barTimeoutId = setTimeout(function () {
+                    if (!running) return;
 
-            /* 3️⃣ remove preloader completely */
-            preloaderTL.set(".preloader", {
-                display: "none"
-            });
+                    for (var j = 0; j < 2; j++) {
+                        var barIndex = j + increment;
+                        if (barIndex >= innerBars.length) break;
 
-            /* ===================================
-               OPTIONAL TEXT ANIMATION
-            =================================== */
+                        gsap.to(innerBars[barIndex], {
+                            width: "100%",
+                            duration: 0.5,
+                            ease: "none"
+                        });
+                    }
 
-            let splitText = new SplitType(".text-animation-effect", {
-                types: "chars"
-            });
+                    increment += 2;
 
-            if (document.querySelectorAll('.text-animation-effect .char').length) {
-
-                preloaderTL.from(
-                    ".text-animation-effect .char",
-                    {
-                        duration: 1.2,
-                        y: 40,
-                        autoAlpha: 0,
-                        stagger: 0.05,
-                        ease: "power2.out"
-                    },
-                    "-=0.5"
-                );
+                    if (increment < innerBars.length) {
+                        animateBars();
+                    } else if (running) {
+                        resetBars();
+                        animateBars();
+                    }
+                }, 200);
             }
-        }
 
-    }, 200);
-}
+            function start() {
+                if (running) return;
+                if (!queryBars()) return;
+                running = true;
+                resetBars();
+                animateBars();
+            }
 
-/* start preloader */
-animateBars();
+            function stop() {
+                running = false;
+                if (barTimeoutId) {
+                    clearTimeout(barTimeoutId);
+                    barTimeoutId = null;
+                }
+            }
+
+            window.addEventListener("ae3-preloader-exit", stop);
+            window.addEventListener("ae3-preloader-ready", start);
+
+            if (queryBars()) {
+                start();
+            }
+        })();
 
     // Panorama: initialized from React (PanoramaArea.jsx) so URL + mount order are reliable.
-    
-    $(window).on("load", function () {
-        animateBars();
-        setTimeout(function () {
-            // React keeps owning the preloader node; jQuery .remove() breaks React unmount (removeChild NotFoundError).
-            $(".preloader").css({ display: "none", visibility: "hidden", pointerEvents: "none" });
-        }, 3000);
-    });
 
 
     $(document).ready(function () {

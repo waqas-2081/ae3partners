@@ -1,14 +1,39 @@
-/* Default vs sticky logo swap (.fixed is toggled by public/assets/js/main.js on scroll) */
-.header .primary-header-inner .header-logo .header-logo-sticky {
-  display: none;
+/* White header + AE3 logo (default and sticky use the same asset) */
+.header {
+  background: #fff;
 }
 
-.header .primary-header.fixed .header-logo .header-logo-default {
-  display: none;
+.header .primary-header {
+  background: #fff !important;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
-.header .primary-header.fixed .header-logo .header-logo-sticky {
+.header .primary-header.fixed {
+  background: #fff !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Align header content with hero heading (ae3h__content uses left: 5%) */
+.header .primary-header > .container {
+  max-width: 100%;
+  padding-left: 5%;
+  padding-right: 5%;
+}
+
+.header .primary-header-inner .header-logo img {
   display: block;
+  max-width: clamp(150px, 14vw, 210px);
+  width: auto;
+  height: auto;
+}
+
+.header .primary-header-inner .header-menu-wrap ul li a {
+  color: #0d1520;
+}
+
+.header .primary-header-inner .header-menu-wrap ul li a:hover,
+.header .primary-header-inner .header-menu-wrap ul li.active a {
+  color: var(--secondary, #d05727);
 }
 
 .header .header-social-wrap {
@@ -25,15 +50,15 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  color: #ffffff;
+  border: 1px solid rgba(0, 47, 135, 0.22);
+  color: #002f87;
   transition: all 0.2s ease;
 }
 
 .header .header-social-link:hover {
-  border-color: #ffffff;
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  border-color: var(--secondary, #d05727);
+  background: rgba(208, 87, 39, 0.08);
+  color: var(--secondary, #d05727);
 }
 
 /* MeanMenu + main.js expect .mobile-side-menu-toggle (not .sidebar-trigger — that toggles a different sidebar). */
@@ -59,6 +84,12 @@
   }
 }
 
+@media (max-width: 991px) {
+  .header .primary-header > .container {
+    padding-left: 10%;
+  }
+}
+
 @media (max-width: 992px) {
   .header .primary-header-inner {
     flex-wrap: nowrap;
@@ -73,7 +104,7 @@
   }
 
   .header .primary-header-inner .header-logo img {
-    max-width: min(150px, 44vw);
+    max-width: min(168px, 48vw);
     height: auto;
   }
 
@@ -106,7 +137,7 @@
     margin: 0;
     border: none;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.14);
+    background: rgba(0, 47, 135, 0.08);
     cursor: pointer;
     flex-shrink: 0;
     -webkit-tap-highlight-color: transparent;
@@ -116,7 +147,7 @@
     display: block;
     height: 3px;
     border-radius: 2px;
-    background: #fff;
+    background: #002f87;
     margin-left: auto;
     transition: width 0.25s ease, opacity 0.25s ease;
   }

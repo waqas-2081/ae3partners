@@ -7849,7 +7849,7 @@ ul {
 }
 
 .counter-1 {
-    padding-bottom: 425px;
+    padding-bottom: 365px;
     position: relative;
     z-index: 1;
     overflow-x: clip
@@ -7883,7 +7883,7 @@ ul {
 
 .counter-1 .counter-element {
     position: absolute;
-    bottom: -35%;
+    bottom: -33%;
     right: 77px
 }
 

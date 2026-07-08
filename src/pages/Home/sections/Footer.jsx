@@ -104,7 +104,9 @@ export default function Footer() {
           <div className="ae3-footer-card ae3-about-card">
             <div className="ae3-footer-logo">
               <a href="/" onClick={(e) => e.preventDefault()}>
-                <img src={`${P}/assets/newimages/logo.png`} alt="AE3 Partners" />
+                <span className="ae3-footer-logo-pad">
+                  <img src={`${P}/assets/newimages/ae3-logo.png`} alt="AE3 Partners — Architecture + CM" />
+                </span>
               </a>
             </div>
             <h4>About AE3 Partners</h4>

@@ -102,16 +102,31 @@ body {
   filter: brightness(0) invert(1);
 }
 
+/* React preloader (Preloader.jsx): minimum display + smooth exit */
+.preloader {
+  background-color: #111;
+  opacity: 1;
+  transition: opacity 0.8s ease-out;
+  will-change: auto;
+}
+
+.preloader.preloader--fading {
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
+}
+
 /* React preloader (Preloader.jsx): logo centered over bars */
 .preloader .site-name {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 3;
 }
 
 .preloader .site-name .preloader-logo {
-  max-width: min(320px, 78vw);
-  max-height: min(100px, 18vh);
+  max-width: min(560px, 90vw);
+  max-height: min(180px, 30vh);
   width: auto;
   height: auto;
   object-fit: contain;
@@ -119,8 +134,8 @@ body {
 
 @media (max-width: 767px) {
   .preloader .site-name .preloader-logo {
-    max-width: 240px;
-    max-height: 72px;
+    max-width: min(380px, 86vw);
+    max-height: min(130px, 24vh);
   }
 }
 

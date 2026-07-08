@@ -18,6 +18,7 @@ import BlogSection from './sections/BlogSection';
 import GallerySection from './sections/GallerySection';
 import Footer from './sections/Footer';
 import ScrollPercentage from './components/ScrollPercentage';
+import HeroSection2 from './herosection2';
 
 export default function Home() {
   const [scriptsReady, setScriptsReady] = useState(false);
@@ -64,10 +65,10 @@ export default function Home() {
 
       <div id="app-wrapper">
         <div id="app-content">
-          <HeroSection />
+          <HeroSection2 />
+          {/* <ProjectCarouselSection /> */}
           <ProjectShowcaseSection />
           <ProjectBigSection />
-          <ProjectCarouselSection />
           {/* <FeatureSection /> */}
           <AboutSection />
           <CounterSection />

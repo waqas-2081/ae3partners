@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const P = process.env.PUBLIC_URL || '';
+const MIN_DISPLAY_MS = 5000;
+const FADE_OUT_MS = 800;
+const LOAD_FALLBACK_MS = 15000;
 
 function kickSliderAfterPreload() {
   if (typeof window.startSliderAfterPreload === 'function') {
@@ -13,39 +16,89 @@ function kickSliderAfterPreload() {
 }
 
 export default function Preloader() {
-  const [gone, setGone] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const [fading, setFading] = useState(false);
+  const mountTimeRef = useRef(Date.now());
+  const exitStartedRef = useRef(false);
+  const finishedRef = useRef(false);
 
   useEffect(() => {
-    const hide = () => {
-      kickSliderAfterPreload();
-      setGone(true);
+    window.dispatchEvent(new Event('ae3-preloader-ready'));
+  }, []);
+
+  useEffect(() => {
+    let exitTimerId;
+    let fallbackId;
+    let cancelled = false;
+    let pageReady = document.readyState === 'complete';
+
+    const beginFadeOut = () => {
+      if (cancelled || exitStartedRef.current) return;
+      exitStartedRef.current = true;
+      window.dispatchEvent(new Event('ae3-preloader-exit'));
+      setFading(true);
     };
 
-    // Full page load: window "load" runs once; main.js hides preloader after ~3s.
-    // SPA visit to "/" later: "load" already fired — main.js + GSAP never re-run for new nodes.
-    if (document.readyState === 'complete') {
-      const id = window.setTimeout(hide, 750);
-      return () => window.clearTimeout(id);
+    const scheduleFadeOut = () => {
+      if (!pageReady || exitStartedRef.current) return;
+
+      const remaining = MIN_DISPLAY_MS - (Date.now() - mountTimeRef.current);
+      exitTimerId = window.setTimeout(beginFadeOut, Math.max(0, remaining));
+    };
+
+    const onPageReady = () => {
+      pageReady = true;
+      scheduleFadeOut();
+    };
+
+    if (pageReady) {
+      scheduleFadeOut();
+    } else {
+      window.addEventListener('load', onPageReady, { once: true });
     }
 
-    let afterLoadId;
-    const onLoad = () => {
-      afterLoadId = window.setTimeout(hide, 2900);
-    };
-    window.addEventListener('load', onLoad);
-    const fallbackId = window.setTimeout(hide, 9000);
+    fallbackId = window.setTimeout(onPageReady, LOAD_FALLBACK_MS);
 
     return () => {
-      window.removeEventListener('load', onLoad);
-      window.clearTimeout(afterLoadId);
+      cancelled = true;
+      window.removeEventListener('load', onPageReady);
+      window.clearTimeout(exitTimerId);
       window.clearTimeout(fallbackId);
     };
   }, []);
 
-  if (gone) return null;
+  useEffect(() => {
+    if (!fading) return undefined;
+
+    const finish = () => {
+      if (finishedRef.current) return;
+      finishedRef.current = true;
+      kickSliderAfterPreload();
+      setVisible(false);
+    };
+
+    const fallbackId = window.setTimeout(finish, FADE_OUT_MS + 50);
+
+    return () => window.clearTimeout(fallbackId);
+  }, [fading]);
+
+  const handleTransitionEnd = (event) => {
+    if (event.propertyName !== 'opacity' || !fading) return;
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    kickSliderAfterPreload();
+    setVisible(false);
+  };
+
+  if (!visible) return null;
 
   return (
-    <div className="preloader overflow-hidden">
+    <div
+      className={`preloader overflow-hidden${fading ? ' preloader--fading' : ''}`}
+      onTransitionEnd={handleTransitionEnd}
+      aria-busy={!fading}
+      aria-hidden={fading}
+    >
       <div className="site-name">
         <img
           className="preloader-logo"

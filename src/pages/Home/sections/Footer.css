@@ -112,9 +112,20 @@
   margin-bottom: 18px;
 }
 
+.ae3-footer-logo-pad {
+  display: inline-block;
+  background: #fff;
+  padding: 10px 16px;
+  border-radius: 12px;
+  line-height: 0;
+}
+
 .ae3-footer-logo img {
-  max-height: 62px;
+  max-height: 72px;
+  max-width: min(240px, 100%);
   width: auto;
+  height: auto;
+  display: block;
 }
 
 .ae3-location {
