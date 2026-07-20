@@ -1,3 +1,13 @@
+/* Gallery captions + heading only — do not override .gallary-wrap / padding / transforms
+   (GSAP scroll scrub depends on the original main.css structure). */
+
+.gallary-section .gallary-heading-wrap {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 40px;
+  padding-top: 0;
+}
+
 .gallary-scroll-item .gallary-scroll-link {
   display: block;
   position: relative;
@@ -25,6 +35,10 @@
 }
 
 @media only screen and (max-width: 767px) {
+  .gallary-section .gallary-heading-wrap {
+    margin-bottom: 24px;
+  }
+
   .gallary-scroll-item .gallary-scroll-caption {
     padding: 18px 8px 8px;
     font-size: 9px;

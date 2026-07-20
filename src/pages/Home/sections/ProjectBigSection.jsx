@@ -53,7 +53,7 @@ export default function ProjectBigSection() {
               <h3 className="fp__project-title">{project.title}</h3>
               <p className="fp__desc">{project.description}</p>
               <Link to="/projects" className="fp__btn">
-                <span>View Detail</span>
+                <span>View Details</span>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                   <path
                     d="M3 8h10M9 4l4 4-4 4"

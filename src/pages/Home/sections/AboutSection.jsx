@@ -22,13 +22,13 @@ export default function AboutSection() {
                   Who We Are
                 </h4>
                 <h2 className="section-title cursor-effect">
-                  Designing for the 21st Century, <span>One Great Client at a Time</span>
+                  Trusted Advisors. <span>Proven Partners.</span>
                 </h2>
               </div>
               <ul className="about-list">
                 {[
                   'Focused on your needs and outcomes',
-                  'Timeless, attractive, green design',
+                  'Timeless, attractive, and sustainable design',
                   'Delivering on budget and schedule',
                   'Collaborative, ego-free team approach'
                 ].map((label) => (
@@ -39,8 +39,9 @@ export default function AboutSection() {
                 ))}
               </ul>
               <p>
-                AE3 Partners is a full service Architecture + Construction Management firm based in San Francisco, serving
-                clients throughout California with integrated design and delivery expertise.
+                AE3 is an architecture firm providing planning and construction management services for public and
+                private clients across California and beyond. We combine creative thinking, technical expertise, and
+                responsive leadership to help clients achieve successful outcomes.
               </p>
               <div className="about-btn">
                 <a href="/" onClick={(e) => e.preventDefault()} className="tl-primary-btn white-btn">

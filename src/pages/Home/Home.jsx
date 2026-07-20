@@ -18,6 +18,7 @@ import BlogSection from './sections/BlogSection';
 import GallerySection from './sections/GallerySection';
 import Footer from './sections/Footer';
 import ScrollPercentage from './components/ScrollPercentage';
+import ValuesMotif from './components/ValuesMotif';
 
 export default function Home() {
   const [scriptsReady, setScriptsReady] = useState(false);
@@ -68,10 +69,12 @@ export default function Home() {
           {/* <ProjectCarouselSection /> */}
           <ProjectShowcaseSection />
           <ProjectBigSection />
+          <ValuesMotif variant="band" />
           {/* <FeatureSection /> */}
           <AboutSection />
           <CounterSection />
           <ProcessSection />
+          <ValuesMotif variant="band-dark" />
           <TestimonialSection />
           <SponsorSection />
           {/* <VideoSection /> */}

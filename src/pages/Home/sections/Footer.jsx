@@ -1,4 +1,5 @@
 import './Footer.css';
+import ValuesMotif from '../components/ValuesMotif';
 
 const P = process.env.PUBLIC_URL || '';
 
@@ -109,12 +110,10 @@ export default function Footer() {
                 </span>
               </a>
             </div>
-            <h4>About AE3 Partners</h4>
             <p>
-              Full-service Architecture + Construction Management studio shaping visionary spaces across California with
-              precision, purpose, and timeless style.
+              Full-service architecture, planning, and construction management studio shaping visionary spaces across
+              California with precision, purpose, and timeless style.
             </p>
-            <p className="ae3-location">San Francisco, California - United States</p>
           </div>
 
           <FooterList title="Quick Links" items={quickLinks} />

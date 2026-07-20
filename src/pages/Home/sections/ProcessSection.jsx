@@ -13,7 +13,7 @@ export default function ProcessSection() {
               How We Work
             </h4>
             <h2 className="section-title cursor-effect title-2">
-              Collaborative <span>delivery built around <br /> your goals</span> and outcomes.
+              A Process Built on <span>Partnership</span>
             </h2>
           </div>
           <div className="process-desc">

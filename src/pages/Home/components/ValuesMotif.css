@@ -1,0 +1,191 @@
+/* AE3 driving force — Trust. Partnership. Results. — recurring visual motif */
+
+.ae3-values {
+  --ae3-values-ink: #0d1520;
+  --ae3-values-accent: var(--secondary, #d05727);
+  --ae3-values-rule: rgba(13, 21, 32, 0.18);
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.ae3-values__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.15em 0.35em;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.ae3-values__item {
+  display: inline-flex;
+  align-items: baseline;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: ae3ValuesIn 0.7s ease forwards;
+  animation-delay: calc(0.12s * var(--i, 0));
+}
+
+.ae3-values__word {
+  color: var(--ae3-values-ink);
+}
+
+.ae3-values__dot {
+  color: var(--ae3-values-accent);
+  margin-left: 0.02em;
+  letter-spacing: 0;
+}
+
+/* ── Band: full-width section divider ───────────────────────── */
+.ae3-values--band {
+  padding: 42px 5%;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(246, 244, 240, 0.98)),
+    repeating-linear-gradient(
+      -12deg,
+      transparent,
+      transparent 11px,
+      rgba(13, 21, 32, 0.02) 11px,
+      rgba(13, 21, 32, 0.02) 12px
+    );
+  border-top: 1px solid var(--ae3-values-rule);
+  border-bottom: 1px solid var(--ae3-values-rule);
+}
+
+.ae3-values--band .ae3-values__inner {
+  font-size: clamp(15px, 2.1vw, 26px);
+  gap: 0.2em 0.55em;
+}
+
+.ae3-values--band::before,
+.ae3-values--band::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: min(12%, 120px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ae3-values-accent), transparent);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.ae3-values--band::before {
+  left: 4%;
+  transform: translateY(-50%);
+}
+
+.ae3-values--band::after {
+  right: 4%;
+  transform: translateY(-50%);
+}
+
+/* Dark band for use on dark sections */
+.ae3-values--band-dark {
+  padding: 42px 5%;
+  background: #0b1220;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ae3-values--band-dark .ae3-values__inner {
+  font-size: clamp(15px, 2.1vw, 26px);
+  gap: 0.2em 0.55em;
+}
+
+.ae3-values--band-dark .ae3-values__word {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.ae3-values--band-dark::before,
+.ae3-values--band-dark::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: min(12%, 120px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ae3-values-accent), transparent);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.ae3-values--band-dark::before {
+  left: 4%;
+  transform: translateY(-50%);
+}
+
+.ae3-values--band-dark::after {
+  right: 4%;
+  transform: translateY(-50%);
+}
+
+/* ── Hero: quiet line under actions ─────────────────────────── */
+.ae3-values--hero {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.ae3-values--hero .ae3-values__inner {
+  justify-content: flex-start;
+  font-size: clamp(11px, 1vw, 13px);
+  letter-spacing: 0.28em;
+  gap: 0.1em 0.4em;
+}
+
+.ae3-values--hero .ae3-values__word {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* ── Footer compact signature ───────────────────────────────── */
+.ae3-values--footer {
+  margin: 28px 0 8px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.ae3-values--footer .ae3-values__inner {
+  justify-content: flex-start;
+  font-size: 12px;
+  letter-spacing: 0.24em;
+}
+
+.ae3-values--footer .ae3-values__word {
+  color: rgba(231, 236, 255, 0.88);
+}
+
+@keyframes ae3ValuesIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 767px) {
+  .ae3-values--band,
+  .ae3-values--band-dark {
+    padding: 28px 6%;
+  }
+
+  .ae3-values--band::before,
+  .ae3-values--band::after,
+  .ae3-values--band-dark::before,
+  .ae3-values--band-dark::after {
+    display: none;
+  }
+
+  .ae3-values--hero .ae3-values__inner {
+    letter-spacing: 0.18em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ae3-values__item {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}

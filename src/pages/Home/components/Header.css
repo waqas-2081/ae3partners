@@ -22,7 +22,7 @@
 
 .header .primary-header-inner .header-logo img {
   display: block;
-  max-width: clamp(150px, 14vw, 210px);
+  max-width: clamp(96px, 9vw, 128px);
   width: auto;
   height: auto;
 }
@@ -67,16 +67,21 @@
     flex: 1;
     display: flex;
     align-items: center;
+    column-gap: 80px;
+  }
+
+  .header .primary-header-inner .header-logo {
+    flex-shrink: 0;
   }
 
   .header .primary-header-inner .header-menu-wrap {
-    flex: 1;
+    flex: 0 1 auto;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .header .primary-header-inner .header-menu-wrap .mobile-menu-items > ul {
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .header .ae3-hamburger-btn {
@@ -104,7 +109,7 @@
   }
 
   .header .primary-header-inner .header-logo img {
-    max-width: min(168px, 48vw);
+    max-width: min(110px, 40vw);
     height: auto;
   }
 

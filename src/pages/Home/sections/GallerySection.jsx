@@ -64,9 +64,30 @@ function GalleryItem({ item }) {
 export default function GallerySection() {
   return (
     <div className="gallary-section overflow-hidden">
-      <div className="gallary-text">
+      <div className="gallary-text" aria-hidden="true">
         <span>Gallery</span>
       </div>
+
+      <div className="container container-2">
+        <div className="row section-heading-wrap gallary-heading-wrap">
+          <div className="shape">
+            <img src={`${P}/assets/img/shapes/section-heading.png`} alt="" />
+          </div>
+          <div className="col-lg-4 col-md-12">
+            <div className="section-heading mb-0">
+              <h4 className="sub-heading">Gallery</h4>
+            </div>
+          </div>
+          <div className="col-lg-8 col-md-12">
+            <div className="section-heading section-heading-2 mb-0">
+              <h2 className="section-title title-2">
+                A closer look at <span>spaces we shape</span>
+              </h2>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="gallary-wrap wrap-1">
         <div className="gallery-scroll-wrap">
           {GALLERY_ROW_1.map((item) => (

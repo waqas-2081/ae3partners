@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 
 const P = process.env.PUBLIC_URL || '';
-const MIN_DISPLAY_MS = 5000;
-const FADE_OUT_MS = 800;
-const LOAD_FALLBACK_MS = 15000;
+const MIN_DISPLAY_MS = 1200;
+const FADE_OUT_MS = 450;
+const LOAD_FALLBACK_MS = 8000;
 
 function kickSliderAfterPreload() {
   if (typeof window.startSliderAfterPreload === 'function') {

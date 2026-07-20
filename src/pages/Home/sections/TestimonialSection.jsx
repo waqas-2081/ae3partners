@@ -16,7 +16,7 @@ export default function TestimonialSection() {
                 Why Clients Choose AE3
               </h4>
               <h2 className="section-title cursor-effect title-2">
-                Small firm service, <span>large firm vision and experience</span>
+                Partnerships Built on Trust. <span>Proven by Performance.</span>
               </h2>
             </div>
           </div>

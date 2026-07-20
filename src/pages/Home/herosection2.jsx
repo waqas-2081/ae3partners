@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import ValuesMotif from "./components/ValuesMotif";
 
 const P = process.env.PUBLIC_URL || "";
 
@@ -36,15 +37,16 @@ export default function HeroSection2() {
       <div className="ae3h__content">
         <div className="ae3h__eyebrow">
           <span className="ae3h__eyebrow-line" />
-          Architecture + Construction Management
+          Architecture, Planning, and Construction Management
         </div>
         <h2 className="ae3h__headline">
-          Full-Service Support, <span className="ae3h__accent">One Great Client at a Time</span>
+          Designing What&apos;s <span className="ae3h__accent">Next.</span>
         </h2>
         <p className="ae3h__sub">
-          AE3 Partners provides integrated architecture and construction management services across California, from
-          early strategy through closeout.
+          AE3 Partners provides integrated architecture, planning, and construction management services for public and
+          private clients. We transform ideas into thoughtfully designed, successfully delivered projects.
         </p>
+        <ValuesMotif variant="hero" />
         <div className="ae3h__actions">
           <a href="/" onClick={(e) => e.preventDefault()} className="ae3h__btn ae3h__btn--primary">
             <span>Our Services</span>

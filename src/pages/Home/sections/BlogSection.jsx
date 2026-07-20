@@ -30,23 +30,25 @@ export default function BlogSection() {
               {
                 img: `${P}/assets/newimages/blog1.jpg`,
                 key: 'blog1.jpg',
-                title: '18 Years of Design That Connects Us'
+                title: 'Building the Future: WLAC Kicks Off Construction of New Facilities & Shops Complex',
+              
               },
               {
                 img: `${P}/assets/newimages/blog2.jpg`,
                 key: 'blog2.jpg',
-                title: 'Liberation Park Project Takes Shape in East Oakland'
+                title: 'Liberation Park Project Takes Shape in East Oakland: A New Hub for Community Empowerment',
               },
               {
                 img: `${P}/assets/newimages/blog3.jpg`,
                 key: 'blog3.jpg',
-                title: 'Designing for the 21st Century, One Great Client at a Time'
-              }
+                title:
+                  'AE3 Partners and Steinberg Hart Collaborate with LAWA to Enhance Traveler Experience Ahead of the Los Angeles Olympics',
+              },
             ].map((p) => (
               <div className="swiper-slide" key={p.key}>
                 <div className="post-card">
                   <div className="post-thumb">
-                    <img src={p.img} alt="post" />
+                    <img src={p.img} alt={p.title} />
                     <span className="category">news</span>
                   </div>
                   <div className="post-content">
@@ -61,7 +63,6 @@ export default function BlogSection() {
                         {p.title}
                       </a>
                     </h3>
-                    <p>Updates from our projects, practice, and community partnerships across California.</p>
                   </div>
                 </div>
               </div>
