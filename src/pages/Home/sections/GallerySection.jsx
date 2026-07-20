@@ -1,60 +1,59 @@
 import { Link } from 'react-router-dom';
-import { DUBLIN_SHERIFF_DETAIL_PATH } from '../../Projects/ProjectDetailPage';
 import './GallerySection.css';
 
 const P = process.env.PUBLIC_URL || '';
+const IMG = `${P}/assets/newimages/gallery-ribbon`;
 
-const GALLERY_ROW_1 = [
+/**
+ * Bottom gallery ribbon — projects + images from AE3 Dropbox
+ * "Bottom Ribbon_Home Page" folder (official project photos).
+ */
+const GALLERY_PROJECTS = [
   {
-    img: 'project1.jpg',
-    title: 'Liberation Park Market Hall & Communal Courtyard',
+    img: `${IMG}/college-of-alameda-aviation.png`,
+    title: 'College of Alameda Aviation Complex Replacement',
     to: '/projects',
   },
   {
-    img: 'project2.jpg',
-    title: 'Dublin Transit Center Parking Garage',
-    to: DUBLIN_SHERIFF_DETAIL_PATH,
-  },
-  {
-    img: 'projectt.png',
-    title: 'College of Alameda Aviation Complex',
-    to: '/projects',
-  },
-  {
-    img: 'project4.jpg',
-    title: 'African American Holistic Resource Center',
-    to: '/projects',
-  },
-];
-
-const GALLERY_ROW_2 = [
-  {
-    img: 'project5.jpg',
-    title: 'Patelco Credit Union & Sprinkles Cupcakes - San Ramon Branch',
-    to: '/projects',
-  },
-  {
-    img: 'gallery.png',
+    img: `${IMG}/wlac-plant-facilities.png`,
     title: 'WLAC Plant Facilities & Shops Replacement',
     to: '/projects',
   },
   {
-    img: 'blog2.jpg',
-    title: 'Liberation Park Project Takes Shape in East Oakland',
+    img: `${IMG}/lax-cta-west-corridor.png`,
+    title: 'LAX CTA West Corridor Design-Build',
     to: '/projects',
   },
   {
-    img: 'blog3.jpg',
-    title: 'LAWA Lot F Rehab Project',
+    img: `${IMG}/liberation-park.png`,
+    title: 'Liberation Park Market Hall & Communal Courtyard',
+    to: '/projects',
+  },
+  {
+    img: `${IMG}/merritt-cdc.png`,
+    title: 'Merritt College Child Development Center',
+    to: '/projects',
+  },
+  {
+    img: `${IMG}/oak-arrivals-exterior.png`,
+    title: 'Oakland International Airport, International Arrivals Building Improvements',
+    to: '/projects',
+  },
+  {
+    img: `${IMG}/sfo-sky-terrace.png`,
+    title: 'SFO Terminal 2 Sky Terrace and Build-Back',
     to: '/projects',
   },
 ];
+
+const GALLERY_ROW_1 = GALLERY_PROJECTS.slice(0, 4);
+const GALLERY_ROW_2 = GALLERY_PROJECTS.slice(4);
 
 function GalleryItem({ item }) {
   return (
     <div className="gallary-scroll-item">
       <Link to={item.to} className="gallary-scroll-link">
-        <img src={`${P}/assets/newimages/${item.img}`} alt={item.title} loading="lazy" />
+        <img src={item.img} alt={item.title} loading="lazy" />
         <span className="gallary-scroll-caption">{item.title}</span>
       </Link>
     </div>
@@ -91,14 +90,14 @@ export default function GallerySection() {
       <div className="gallary-wrap wrap-1">
         <div className="gallery-scroll-wrap">
           {GALLERY_ROW_1.map((item) => (
-            <GalleryItem key={item.img} item={item} />
+            <GalleryItem key={item.title} item={item} />
           ))}
         </div>
       </div>
       <div className="gallary-wrap gallery-scroll-direction-ltr">
         <div className="gallery-scroll-wrap align-items-start">
           {GALLERY_ROW_2.map((item) => (
-            <GalleryItem key={item.img} item={item} />
+            <GalleryItem key={item.title} item={item} />
           ))}
         </div>
       </div>

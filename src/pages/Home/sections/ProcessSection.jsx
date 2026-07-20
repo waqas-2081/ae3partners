@@ -25,21 +25,41 @@ export default function ProcessSection() {
         </div>
         <div className="row gy-xl-0 gy-4 process-wrap fade-wrapper">
           {[
-            { n: '01', title: 'Listen & Align', img: `${P}/assets/newimages/service1.jpg` },
-            { n: '02', title: 'Plan & Design', img: `${P}/assets/newimages/service2.jpg` },
-            { n: '03', title: 'Deliver & Coordinate', img: `${P}/assets/newimages/service3.jpg` },
-            { n: '04', title: 'Close Out & Support', img: `${P}/assets/newimages/service4.jpg` }
+            {
+              n: '01',
+              title: 'Listen & Align',
+              img: `${P}/assets/newimages/service1.jpg`,
+              text: 'We start by understanding your goals, constraints, and stakeholders so every decision reflects what success looks like for you.',
+            },
+            {
+              n: '02',
+              title: 'Plan & Design',
+              img: `${P}/assets/newimages/service2.jpg`,
+              text: 'Thoughtful planning and design options that balance vision, budget, schedule, and long term performance.',
+            },
+            {
+              n: '03',
+              title: 'Deliver & Coordinate',
+              img: `${P}/assets/newimages/service3.jpg`,
+              text: 'Hands-on coordination through construction keeping teams aligned, issues resolved, and the project moving forward.',
+            },
+            {
+              n: '04',
+              title: 'Close Out & Support',
+              img: `${P}/assets/newimages/service4.jpg`,
+              text: 'A clean closeout with documentation, punch-list resolution, and support that carries the project from delivery to day to day use.',
+            },
           ].map((p) => (
             <div className="col-xl-3 col-lg-6 col-md-6" key={p.n}>
               <div className="process-item fade-top">
                 <div className="process-thumb">
-                  <img src={p.img} alt="process" />
+                  <img src={p.img} alt={p.title} />
                 </div>
                 <div className="process-content">
                   <h3 className="title">
                     <span>{p.n}</span>. {p.title}
                   </h3>
-                  <p>Integrated architecture + CM guidance, delivered with collaboration, speed, and accountability.</p>
+                  <p>{p.text}</p>
                 </div>
                 <span className="number">{p.n}</span>
               </div>
