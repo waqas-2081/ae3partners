@@ -28,11 +28,20 @@ h6,
   font-family: 'Montserrat', sans-serif !important;
 }
 
-html,
+/* Only ONE scrollport — setting overflow-x:hidden on both html+body
+   makes overflow-y compute to auto on both → double scrollbar. */
+html {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  overflow-y: scroll;
+}
+
 body {
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 /* ============================================================

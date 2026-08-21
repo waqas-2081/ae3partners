@@ -1,6 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <script>
+      /* Must run before webpack-dev-server overlay — benign layout notice */
+      (function () {
+        function isResizeObserverNoise(msg) {
+          return (
+            typeof msg === 'string' &&
+            (msg.indexOf('ResizeObserver loop completed with undelivered notifications') !== -1 ||
+              msg.indexOf('ResizeObserver loop limit exceeded') !== -1)
+          );
+        }
+        window.addEventListener(
+          'error',
+          function (e) {
+            if (isResizeObserverNoise(e && e.message)) {
+              e.stopImmediatePropagation();
+              e.preventDefault();
+            }
+          },
+          true
+        );
+        if (typeof window.ResizeObserver === 'function') {
+          var RO = window.ResizeObserver;
+          window.ResizeObserver = function (callback) {
+            return new RO(function (entries, observer) {
+              window.requestAnimationFrame(function () {
+                callback(entries, observer);
+              });
+            });
+          };
+          window.ResizeObserver.prototype = RO.prototype;
+        }
+      })();
+    </script>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/assets/newimages/fav.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

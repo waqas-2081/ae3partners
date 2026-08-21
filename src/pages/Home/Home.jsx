@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ensureTemplateScriptsLoaded } from '../../template/loadTemplateScripts';
+import { reinitPageEffects } from '../../template/reinitPageEffects';
 import Preloader from './components/Preloader';
 import Header from './components/Header';
 import MobileSideMenu from './components/MobileSideMenu';
@@ -16,9 +17,10 @@ import SponsorSection from './sections/SponsorSection';
 import VideoSection from './sections/VideoSection';
 import BlogSection from './sections/BlogSection';
 import GallerySection from './sections/GallerySection';
-import Footer from './sections/Footer';
+import SiteFooter from '../../components/SiteFooter/SiteFooter';
 import ScrollPercentage from './components/ScrollPercentage';
 import ValuesMotif from './components/ValuesMotif';
+import './Home.css';
 
 export default function Home() {
   const [scriptsReady, setScriptsReady] = useState(false);
@@ -44,27 +46,37 @@ export default function Home() {
     }
 
     let cancelled = false;
+    let cleanupEffects = () => {};
+
     ensureTemplateScriptsLoaded()
       .then(() => {
-        if (!cancelled) setScriptsReady(true);
+        if (cancelled) return;
+        setScriptsReady(true);
+        // Remount-safe: rebind swipers / fades after SPA navigation back to Home
+        window.setTimeout(() => {
+          if (cancelled) return;
+          cleanupEffects =
+            reinitPageEffects(document.getElementById('app-content') || document) || (() => {});
+        }, 80);
       })
       .catch(() => {
-        // Keep rendering markup even if scripts fail to load.
         if (!cancelled) setScriptsReady(false);
       });
+
     return () => {
       cancelled = true;
+      cleanupEffects();
     };
   }, []);
 
   return (
-    <>
+    <div className="home-page">
       <Preloader />
       <Header />
       <MobileSideMenu />
 
-      <div id="app-wrapper">
-        <div id="app-content">
+      <div id="app-wrapper" className="studio-page">
+        <div id="app-content" className="studio-reveal-content">
           <HeroSection />
           {/* <ProjectCarouselSection /> */}
           <ProjectShowcaseSection />
@@ -80,15 +92,15 @@ export default function Home() {
           {/* <VideoSection /> */}
           <BlogSection />
           <GallerySection />
-          <Footer />
         </div>
+
+        <SiteFooter />
       </div>
 
       <ScrollPercentage />
 
       {/* Keeps React from tree-shaking the template load in some builds */}
       <span style={{ display: 'none' }}>{scriptsReady ? 'ready' : 'loading'}</span>
-    </>
+    </div>
   );
 }
-

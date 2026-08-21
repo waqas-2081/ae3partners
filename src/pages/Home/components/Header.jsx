@@ -32,22 +32,22 @@ export default function Header() {
                     {/* <li className={pathname === '/' ? 'active' : ''}>
                       <Link to="/">Home</Link>
                     </li> */}
-                    <li>
-                      <a href="/" onClick={(e) => e.preventDefault()}>Expertise</a>
+                    <li className={pathname.startsWith('/expertise') ? 'active' : ''}>
+                      <Link to="/expertise">Expertise</Link>
                     </li>
                     <li className={pathname.startsWith('/projects') ? 'active' : ''}>
                       <Link to="/projects">Work</Link>
                     </li>
-                    <li>
-                      <a href="/" onClick={(e) => e.preventDefault()}>Studio</a>
+                    <li className={pathname.startsWith('/studio') ? 'active' : ''}>
+                      <Link to="/studio">Studio</Link>
                     </li>
                 
-                    <li>
-                      <a href="/" onClick={(e) => e.preventDefault()}>Insights</a>
+                    <li className={pathname.startsWith('/insights') ? 'active' : ''}>
+                      <Link to="/insights">Insights</Link>
                     </li>
                  
-                    <li>
-                      <a href="/" onClick={(e) => e.preventDefault()}>Contact</a>
+                    <li className={pathname.startsWith('/contact') ? 'active' : ''}>
+                      <Link to="/contact">Contact</Link>
                     </li>
                   </ul>
                 </div>

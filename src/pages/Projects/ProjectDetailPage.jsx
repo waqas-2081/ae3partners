@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { ensureTemplateScriptsLoaded } from '../../template/loadTemplateScripts';
 import Header from '../Home/components/Header';
 import MobileSideMenu from '../Home/components/MobileSideMenu';
-import Footer from '../Home/sections/Footer';
+import SiteFooter from '../../components/SiteFooter/SiteFooter';
+import GallerySection from '../Home/sections/GallerySection';
 import ScrollPercentage from '../Home/components/ScrollPercentage';
 import './ProjectsPage.css';
 import './ProjectDetailPage.css';
@@ -11,21 +12,106 @@ import './ProjectDetailPage.css';
 const P = process.env.PUBLIC_URL || '';
 const publicImage = (file) => `${P}/assets/newimages/${file}`;
 
-/** In-app URL for the Dublin Transit Center Parking Garage project detail. */
-export const DUBLIN_SHERIFF_DETAIL_PATH = '/projects/dublin-transit-center-parking-garage';
+/** In-app URL for the Liberation Park project detail page. */
+export const LIBERATION_PARK_DETAIL_PATH = '/projects/dublin-transit-center-parking-garage';
 
-const DUBLIN_SHERIFF_IDS = new Set(['feat-dublin-transit', 'civ-dublin-sheriff']);
+/** @deprecated Use LIBERATION_PARK_DETAIL_PATH */
+export const DUBLIN_SHERIFF_DETAIL_PATH = LIBERATION_PARK_DETAIL_PATH;
 
-export function projectHasDublinSheriffDetail(projectId) {
-  return DUBLIN_SHERIFF_IDS.has(projectId);
+const LIBERATION_PARK_IDS = new Set(['feat-liberation-park', 'civ-liberation']);
+
+export function projectHasLiberationParkDetail(projectId) {
+  return LIBERATION_PARK_IDS.has(projectId);
 }
 
+/** @deprecated Use projectHasLiberationParkDetail */
+export function projectHasDublinSheriffDetail(projectId) {
+  return projectHasLiberationParkDetail(projectId);
+}
+
+const HERO_IMAGE = publicImage('projects/liberation-park/1.jpg');
+
 const GALLERY_IMAGES = [
-  publicImage('dub1.jpg'),
-  publicImage('dub2.jpg'),
-  publicImage('dub3.jpg'),
-  publicImage('project2.jpg')
+  {
+    src: publicImage('projects/liberation-park/1.jpg'),
+    caption: 'Market hall exterior at dusk',
+  },
+  {
+    src: publicImage('projects/liberation-park/2.jpg'),
+    caption: 'Communal courtyard perspective',
+  },
+  {
+    src: publicImage('projects/liberation-park/3.jpg'),
+    caption: 'Open-air marketplace activation',
+  },
+  {
+    src: publicImage('featured-projects/liberation-park.png'),
+    caption: 'Liberation Park vision rendering',
+  },
+  {
+    src: publicImage('insights/liberation-park.jpg'),
+    caption: 'Community hub in East Oakland',
+  },
+  {
+    src: publicImage('gallery-ribbon/liberation-park.png'),
+    caption: 'Cultural marketplace facade',
+  },
 ];
+
+const PROJECT_SPECS = [
+  { id: 'sector', label: 'Sector', value: 'Commercial & Civic' },
+  { id: 'location', label: 'Location', value: 'Oakland, CA' },
+  { id: 'role', label: 'Role', value: 'Prime Architect' },
+  { id: 'size', label: 'Size', value: '53,000 SF' },
+  { id: 'status', label: 'Status', value: 'Ongoing', live: true },
+  {
+    id: 'related',
+    label: 'Projects To Be Listed Only',
+    related: [
+      'GSA, Ronald V. Dellums Federal Building',
+      'GSA, 50 United Nations Plaza, Federal Office Building, Pacific Rim 9 Regional Office Realignment Project',
+    ],
+  },
+];
+
+function SpecIcon({ id }) {
+  const icons = {
+    sector: (
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7">
+        <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+    location: (
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7">
+        <path d="M12 21s7-4.5 7-11a7 7 0 10-14 0c0 6.5 7 11 7 11z" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="12" cy="10" r="2.5" />
+      </svg>
+    ),
+    role: (
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7">
+        <path d="M4 20h16M6 20V9l6-4 6 4v11M9 14h2v6H9v-6zm4 0h2v6h-2v-6z" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+    size: (
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7">
+        <path d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4M8 12h8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+    status: (
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7">
+        <circle cx="12" cy="12" r="8" />
+        <path d="M12 8v4l3 2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+    related: (
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7">
+        <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  };
+
+  return icons[id] ?? icons.sector;
+}
 
 function usePdReveal(rootRef) {
   useEffect(() => {
@@ -53,19 +139,21 @@ export default function ProjectDetailPage() {
   const rootRef = useRef(null);
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
+  const gallerySrcs = GALLERY_IMAGES.map((item) => item.src);
+
   const closeLightbox = useCallback(() => setLightboxIndex(null), []);
   const goLightboxPrev = useCallback(() => {
     setLightboxIndex((i) => {
       if (i === null) return null;
-      return i <= 0 ? GALLERY_IMAGES.length - 1 : i - 1;
+      return i <= 0 ? gallerySrcs.length - 1 : i - 1;
     });
-  }, []);
+  }, [gallerySrcs.length]);
   const goLightboxNext = useCallback(() => {
     setLightboxIndex((i) => {
       if (i === null) return null;
-      return i >= GALLERY_IMAGES.length - 1 ? 0 : i + 1;
+      return i >= gallerySrcs.length - 1 ? 0 : i + 1;
     });
-  }, []);
+  }, [gallerySrcs.length]);
 
   useEffect(() => {
     try {
@@ -109,101 +197,154 @@ export default function ProjectDetailPage() {
       <Header />
       <MobileSideMenu />
 
-      <div id="app-wrapper" className="projects-page pd-page" ref={rootRef}>
-        <div id="app-content">
-          <section className="pp-page-header" aria-label="Project">
-            <div className="pp-page-header__inner">
-              <h1 className="pp-page-header__title">Dublin Transit Center Parking Garage</h1>
-              <nav className="pp-page-header__crumb" aria-label="Breadcrumb">
-                <ol>
-                  <li>
-                    <Link to="/">Home</Link>
-                  </li>
-                  <li aria-hidden="true">/</li>
-                  <li>
-                    <Link to="/projects">Projects</Link>
-                  </li>
-                  <li aria-hidden="true">/</li>
-                  <li aria-current="page">Dublin Transit Center Parking Garage</li>
-                </ol>
-              </nav>
-            </div>
-          </section>
+      <div id="app-wrapper" className="projects-page pd-page studio-page" ref={rootRef}>
+        <div id="app-content" className="studio-reveal-content">
+          
 
-          <section className="pd-dark-story" aria-label="Project description">
-            <div className="pd-dark-story__inner">
-              <div className="pd-dark-story__copy">
-                <h2 className="pd-anim-stagger pd-as-1">Dublin Transit Center Parking Garage</h2>
-                <p className="pd-anim-stagger pd-as-1">
-                  Envisioned as a critical link between regional commuters and Bay Area transit, the Dublin
-                  Transit Center Parking Garage establishes a structured, forward-looking approach to transit-
-                  oriented infrastructure. Located adjacent to the Dublin BART station, the five-level, 570-space
-                  facility supports daily commuter flow from the Central San Joaquin Valley, providing a clear and
-                  efficient transition from vehicular arrival to rail connectivity. Developed in partnership with
-                  Alameda County, Caltrans, and the Livermore Amador Valley Transit Authority (LAVTA), the
-                  project reflects a coordinated investment in mobility, access, and long-term transportation
-                  resilience.
+          <section className="pd-showcase" aria-label="Project overview">
+            <div className="pd-showcase__inner">
+              <div className="pd-showcase__grid">
+                <figure className="pd-showcase__media pd-reveal">
+                  <div className="pd-showcase__media-frame">
+                    <img
+                      src={HERO_IMAGE}
+                      alt="Liberation Park Market Hall and Communal Courtyard rendering"
+                      loading="eager"
+                    />
+                  </div>
+                </figure>
+
+                <div className="pd-showcase__body">
+                  <span className="pd-showcase__watermark" aria-hidden="true">
+                    01
+                  </span>
+                  <div className="pd-showcase__body-inner">
+                    <div className="pd-showcase__label-row pd-reveal">
+                      <span className="pd-showcase__label-line" aria-hidden="true" />
+                      <span className="pd-showcase__label">Project Overview</span>
+                    </div>
+                    <h2 className="pd-showcase__title pd-reveal">
+                      Liberation Park Market Hall &amp; Communal Courtyard | Black Cultural Zone Community Development
+                      Corporation
+                    </h2>
+                    <div className="pd-showcase__copy">
+                      <p className="pd-reveal">
+                        AE3 is leading the design of the 53,000 SF Liberation Park Market Hall and Communal Courtyard in
+                        East Oakland, transforming a former parking lot into a flexible marketplace and public gathering
+                        space. The project supports small businesses, food vendors, and artisans through modular stalls,
+                        open-air circulation, and solar-ready canopy structures designed for long-term adaptability. The
+                        site is organized to accommodate both daily use and larger community events, requiring
+                        coordination of infrastructure, circulation, and utility systems.
+                      </p>
+                      <p className="pd-reveal">
+                        A central courtyard provides space for performances, markets, and informal gatherings, supported
+                        by native landscaping and durable site elements. AE3 is working closely with stakeholders to align
+                        the program, site constraints, and long-term operational needs. The project demonstrates the
+                        integration of flexible program space within an urban environment while supporting economic
+                        activity and community use.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="pd-showcase__caption pd-reveal">
+                  East Oakland · 53,000 SF · Prime Architect
                 </p>
-                <p className="pd-anim-stagger pd-as-2">
-                  AE3 Partners served as the Basis of Design Architect, shaping the project&apos;s architectural vision,
-                  planning framework, and core design strategies. The concept prioritizes evolving transportation
-                  patterns, incorporating infrastructure for electric vehicles and commuter vans, while
-                  accommodating emerging technologies such as autonomous neighborhood shuttles. Sustainable
-                  design principles were embedded early, including provisions for a rooftop photovoltaic array,
-                  high-performance lighting systems, and material strategies to reduce environmental impact.
-                  AE3&apos;s design direction, captured in early renderings and planning studies, established the
-                  facility&apos;s architectural character and user experience, informing a final built environment that
-                  closely reflects the project&apos;s original design intent.
-                </p>
-              </div>
-              <div className="pd-dark-story__meta pd-anim-stagger pd-as-3">
-                <h3 className="pd-meta-heading">Project Details</h3>
-                <ul className="pd-meta-list">
-                  <li>
-                    <strong>Location:</strong> Dublin, California
-                  </li>
-                  <li>
-                    <strong>Services Rendered:</strong> Basis of Design; Architectural Planning; Concept Design;
-                    Visualization/Renderings
-                  </li>
-                  <li>
-                    <strong>Size:</strong> 5 Levels; 570 Parking Spaces
-                  </li>
-                  <li>
-                    <strong>Status:</strong> Complete
-                  </li>
-                </ul>
               </div>
             </div>
           </section>
 
-          {/* ③ Gallery */}
-          <section className="pd-gallery" aria-labelledby="pd-gallery-title">
-            <div className="pd-gallery__head pd-container pd-reveal">
-              <h2 id="pd-gallery-title" className="pd-gallery__title">
-                OUR PROJECTS GALLERY
-              </h2>
+          <section className="pd-specs-cards" aria-label="Project specifications">
+            <div className="pd-specs-cards__inner">
+              <div className="pd-specs-cards__head pd-reveal">
+                <p className="pd-specs-cards__eyebrow">
+                  <span className="pd-specs-cards__eyebrow-line" aria-hidden="true" />
+                  Project Details
+                </p>
+                <h2 className="pd-specs-cards__title">Location &amp; Scope</h2>
+                <p className="pd-specs-cards__lead">
+                  Key project information at a glance — sector, location, role, scale, and current status.
+                </p>
+              </div>
+
+              <div className="pd-specs-cards__grid">
+                {PROJECT_SPECS.map((spec, i) => (
+                  <article
+                    key={spec.id}
+                    className={`pd-spec-card pd-spec-card--${spec.id} pd-reveal`}
+                    style={{ '--pd-i': i }}
+                  >
+                    <span className="pd-spec-card__index" aria-hidden="true">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="pd-spec-card__icon" aria-hidden="true">
+                      <SpecIcon id={spec.id} />
+                    </span>
+                    <p className="pd-spec-card__label">{spec.label}</p>
+                    {spec.related ? (
+                      <ul className="pd-spec-card__list">
+                        {spec.related.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="pd-spec-card__value">
+                        {spec.live ? (
+                          <>
+                            <span className="pd-spec-card__live" aria-hidden="true" />
+                            {spec.value}
+                          </>
+                        ) : (
+                          spec.value
+                        )}
+                      </p>
+                    )}
+                  </article>
+                ))}
+              </div>
             </div>
-            <div className="pd-container">
-              <div className="pd-gallery-grid">
-                {GALLERY_IMAGES.map((src, i) => (
+          </section>
+
+          <section className="pd-gallery-full" aria-labelledby="pd-gallery-title">
+            <div className="pd-gallery-full__inner">
+              <div className="pd-gallery-full__head pd-reveal">
+                <div className="pd-gallery-full__head-left">
+                  <p className="pd-gallery-full__eyebrow">
+                    <span className="pd-gallery-full__eyebrow-line" aria-hidden="true" />
+                    Visual Story
+                  </p>
+                  <h2 id="pd-gallery-title" className="pd-gallery-full__title">
+                    Our Projects Gallery
+                  </h2>
+                </div>
+                <p className="pd-gallery-full__lead">
+                  Renderings from the Liberation Park Market Hall &amp; Communal Courtyard a catalytic hub for culture,
+                  commerce, and community in East Oakland.
+                </p>
+              </div>
+
+              <div className="pd-gallery-full__grid">
+                {GALLERY_IMAGES.map((item, i) => (
                   <button
-                    key={src + String(i)}
+                    key={item.src + String(i)}
                     type="button"
-                    className="pd-gallery-cell pd-reveal"
+                    className="pd-gallery-full__cell pd-reveal"
                     style={{ '--pd-i': i }}
                     onClick={() => setLightboxIndex(i)}
-                    aria-label={`Open image ${i + 1} of ${GALLERY_IMAGES.length} in gallery`}
+                    aria-label={`Open ${item.caption} in gallery`}
                   >
-                    <div className="pd-gallery-cell__shine" aria-hidden="true" />
-                    <img src={src} alt="" loading="lazy" />
+                    <img src={item.src} alt={item.caption} loading="lazy" />
+                    <span className="pd-gallery-full__cell-overlay" aria-hidden="true" />
+                    <span className="pd-gallery-full__cell-caption">{item.caption}</span>
+                    <span className="pd-gallery-full__cell-zoom" aria-hidden="true">
+                      +
+                    </span>
                   </button>
                 ))}
               </div>
             </div>
           </section>
 
-          {/* ④ Split contact: equal columns */}
           <section className="pd-contact-split" aria-labelledby="pd-contact-heading">
             <div className="pd-contact-split__left">
               <div className="pd-contact-split__left-inner pd-reveal">
@@ -278,9 +419,10 @@ export default function ProjectDetailPage() {
               </form>
             </div>
           </section>
-
-          <Footer />
+          <GallerySection />
         </div>
+
+        <SiteFooter />
       </div>
 
       {lightboxIndex !== null ? (
@@ -303,7 +445,7 @@ export default function ProjectDetailPage() {
             ‹
           </button>
           <div className="pd-lightbox__frame">
-            <img src={GALLERY_IMAGES[lightboxIndex]} alt="" />
+            <img src={gallerySrcs[lightboxIndex]} alt="" />
           </div>
           <button
             type="button"
@@ -314,7 +456,7 @@ export default function ProjectDetailPage() {
             ›
           </button>
           <p className="pd-lightbox__counter" aria-live="polite">
-            {lightboxIndex + 1} / {GALLERY_IMAGES.length}
+            {lightboxIndex + 1} / {gallerySrcs.length}
           </p>
         </div>
       ) : null}

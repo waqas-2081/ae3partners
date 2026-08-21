@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import { ensureTemplateScriptsLoaded } from '../../template/loadTemplateScripts';
 import Header from '../Home/components/Header';
 import MobileSideMenu from '../Home/components/MobileSideMenu';
-import Footer from '../Home/sections/Footer';
+import SiteFooter from '../../components/SiteFooter/SiteFooter';
+import GallerySection from '../Home/sections/GallerySection';
 import ScrollPercentage from '../Home/components/ScrollPercentage';
-import { DUBLIN_SHERIFF_DETAIL_PATH, projectHasDublinSheriffDetail } from './ProjectDetailPage';
+import { LIBERATION_PARK_DETAIL_PATH, projectHasLiberationParkDetail } from './ProjectDetailPage';
 import './ProjectsPage.css';
 
 /** @typedef {'civic'|'education'|'transportation'|'federal'|'residential'} ProjectCategory */
@@ -768,36 +769,16 @@ export default function Projects() {
       <Header />
       <MobileSideMenu />
 
-      <div id="app-wrapper" className="projects-page" ref={rootRef}>
-        <div id="app-content">
-          <section className="pp-page-header" aria-label="Projects">
-           
-
-            <div className="pp-page-header__inner">
-              <h1 className="pp-page-header__title">Our Projects</h1>
-              <nav className="pp-page-header__crumb" aria-label="Breadcrumb">
-                <ol>
-                  <li>
-                    <Link to="/">Home</Link>
-                  </li>
-                  <li aria-hidden="true">/</li>
-                  <li aria-current="page">Our Projects</li>
-                </ol>
-              </nav>
-            </div>
-          </section>
-
+      <div id="app-wrapper" className="projects-page studio-page" ref={rootRef}>
+        <div id="app-content" className="studio-reveal-content">
           <section className="pp-section pp-featured" id="pp-featured" ref={featuredRef}>
-            <div className="pp-container">
+            <div className="pp-container pp-container--head">
               <div className="pp-featured-head pp-reveal">
                 <div>
                   <p className="pp-section-eyebrow">Spotlight</p>
-                  <h2 className="pp-section-title">
-                    Some Featured Projects
-                  </h2>
+                  <h2 className="pp-section-title">Featured Work</h2>
                   <p className="pp-section-sub">
-                    Landmark work defining communities, infrastructure, and public life across
-                    California the same sectors featured on the AE3 projects portfolio.
+                    Landmark work shaping communities, campuses, and infrastructure across California.
                   </p>
                 </div>
                 <div className="pp-slider-nav">
@@ -819,42 +800,47 @@ export default function Projects() {
                   </button>
                 </div>
               </div>
+            </div>
 
+            <div
+              className="pp-slider-viewport pp-reveal"
+              style={{ '--pp-slide-count': Math.max(1, slideCount) }}
+            >
               <div
-                className="pp-slider-viewport pp-reveal"
-                style={{ '--pp-slide-count': Math.max(1, slideCount) }}
+                className="pp-slider-track"
+                style={{
+                  transform: `translateX(-${(slideIdx * 100) / Math.max(1, slideCount)}%)`,
+                }}
               >
-                <div
-                  className="pp-slider-track"
-                  style={{
-                    transform: `translateX(-${(slideIdx * 100) / Math.max(1, slideCount)}%)`
-                  }}
-                >
-                  {FEATURED_FOR_SLIDER.map((proj, i) => (
-                    <article
-                      key={proj.id}
-                      className={`pp-slide ${i === slideIdx ? 'pp-is-active' : ''}`}
-                      aria-hidden={i !== slideIdx}
-                    >
-                      <img src={projectImg(proj)} alt="" />
-                      <div className="pp-slide-overlay" />
-                      <div className="pp-slide-content">
-                        <span className="pp-slide-tag">{proj.location}</span>
-                        <h3 className="pp-slide-title">{proj.title}</h3>
-                        <p className="pp-slide-meta">{proj.description}</p>
-                        <a
-                          href="#"
-                          className="pp-slide-link"
-                          onClick={(e) => e.preventDefault()}
-                        >
-                          View project →
-                        </a>
-                      </div>
-                    </article>
-                  ))}
-                </div>
+                {FEATURED_FOR_SLIDER.map((proj, i) => (
+                  <article
+                    key={proj.id}
+                    className={`pp-slide ${i === slideIdx ? 'pp-is-active' : ''}`}
+                    aria-hidden={i !== slideIdx}
+                  >
+                    <img src={projectImg(proj)} alt="" />
+                    <div className="pp-slide-overlay" />
+                    <div className="pp-slide-content">
+                      <span className="pp-slide-tag">{proj.location}</span>
+                      <h3 className="pp-slide-title">{proj.title}</h3>
+                      <p className="pp-slide-meta">{proj.description}</p>
+                      <a
+                        href="#pp-all"
+                        className="pp-slide-link"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          document.getElementById('pp-all')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                      >
+                        Explore project →
+                      </a>
+                    </div>
+                  </article>
+                ))}
               </div>
+            </div>
 
+            <div className="pp-container pp-container--head">
               <div className="pp-slider-dots" role="tablist" aria-label="Featured slides">
                 {FEATURED_FOR_SLIDER.map((proj, i) => (
                   <button
@@ -875,10 +861,8 @@ export default function Projects() {
             <div className="pp-container">
               <div className="pp-all-head pp-reveal">
                 <div>
-                  <p className="pp-section-eyebrow">Curated portfolio</p>
                   <h2 className="pp-section-title">All Projects</h2>
                 </div>
-                
               </div>
 
               <div className="pp-tabs pp-reveal" role="tablist" aria-label="Project categories">
@@ -919,8 +903,8 @@ export default function Projects() {
                       </div>
                       <h3 className="pp-card-title">{proj.title}</h3>
                       <p className="pp-card-desc">{proj.excerpt}</p>
-                      {projectHasDublinSheriffDetail(proj.id) ? (
-                        <Link className="pp-card-link" to={DUBLIN_SHERIFF_DETAIL_PATH}>
+                      {projectHasLiberationParkDetail(proj.id) ? (
+                        <Link className="pp-card-link" to={LIBERATION_PARK_DETAIL_PATH}>
                           View project →
                         </Link>
                       ) : (
@@ -937,8 +921,10 @@ export default function Projects() {
 
         
 
-          <Footer />
+          <GallerySection />
         </div>
+
+        <SiteFooter />
       </div>
 
       <ScrollPercentage />

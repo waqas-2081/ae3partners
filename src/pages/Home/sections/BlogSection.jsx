@@ -1,16 +1,43 @@
+import './BlogSection.css';
+
 const P = process.env.PUBLIC_URL || '';
+
+const POSTS = [
+  {
+    img: `${P}/assets/newimages/blog1.jpg`,
+    key: 'blog1.jpg',
+    title: 'Building the Future: WLAC Kicks Off Construction of New Facilities & Shops Complex',
+  },
+  {
+    img: `${P}/assets/newimages/blog2.jpg`,
+    key: 'blog2.jpg',
+    title: 'Liberation Park Project Takes Shape in East Oakland: A New Hub for Community Empowerment',
+  },
+  {
+    img: `${P}/assets/newimages/blog3.jpg`,
+    key: 'blog3.jpg',
+    title:
+      'AE3 Partners and Steinberg Hart Collaborate with LAWA to Enhance Traveler Experience Ahead of the Los Angeles Olympics',
+  },
+];
 
 export default function BlogSection() {
   return (
-    <section className="blog-section pt-150 fade-wrapper tl-bg-color">
+    <section className="ae3-blog blog-section pt-30 fade-wrapper tl-bg-color">
       <div className="container container-2">
         <div className="row section-heading-wrap fade-top">
-          <div className="shape">
-            <img src={`${P}/assets/img/shapes/section-heading.png`} alt="shape" />
+          <div className="shape" aria-hidden="true">
+            <img src={`${P}/assets/img/shapes/section-heading.png`} alt="" />
           </div>
           <div className="col-lg-4 col-md-12">
             <div className="section-heading mb-0">
-              <h4 className="sub-heading" data-text-animation="fade-in-right" data-split="char" data-duration="0.9" data-stagger="0.03">
+              <h4
+                className="sub-heading"
+                data-text-animation="fade-in-right"
+                data-split="char"
+                data-duration="0.9"
+                data-stagger="0.03"
+              >
                 Latest News and Events
               </h4>
             </div>
@@ -26,25 +53,7 @@ export default function BlogSection() {
 
         <div className="blog-carousel swiper fade-top">
           <div className="swiper-wrapper">
-            {[
-              {
-                img: `${P}/assets/newimages/blog1.jpg`,
-                key: 'blog1.jpg',
-                title: 'Building the Future: WLAC Kicks Off Construction of New Facilities & Shops Complex',
-              
-              },
-              {
-                img: `${P}/assets/newimages/blog2.jpg`,
-                key: 'blog2.jpg',
-                title: 'Liberation Park Project Takes Shape in East Oakland: A New Hub for Community Empowerment',
-              },
-              {
-                img: `${P}/assets/newimages/blog3.jpg`,
-                key: 'blog3.jpg',
-                title:
-                  'AE3 Partners and Steinberg Hart Collaborate with LAWA to Enhance Traveler Experience Ahead of the Los Angeles Olympics',
-              },
-            ].map((p) => (
+            {POSTS.map((p) => (
               <div className="swiper-slide" key={p.key}>
                 <div className="post-card">
                   <div className="post-thumb">
@@ -73,4 +82,3 @@ export default function BlogSection() {
     </section>
   );
 }
-

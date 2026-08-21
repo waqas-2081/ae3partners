@@ -6,28 +6,28 @@ const P = process.env.PUBLIC_URL || '';
 const projects = [
   {
     n: '01',
+    img: `${P}/assets/newimages/new.png`,
+    title: 'Liberation Park Market Hall & Communal Courtyard',
+    location: 'Oakland, California',
+    description:
+      'Created as a place to gather, celebrate, and grow, Liberation Park provides local entrepreneurs, artists, and residents with a vibrant community destination rooted in culture, connection, and opportunity.',
+  },
+  {
+    n: '02',
     img: `${P}/assets/newimages/featured-projects/college-of-alameda-aviation.png`,
     title: 'College of Alameda Aviation Complex',
     location: 'Alameda, California',
     description:
       'A new gateway for aviation education, providing students with hands-on training, modern learning environments, and pathways to careers in one of the region\'s most vital industries.',
-  },
-  {
-    n: '02',
-    img: `${P}/assets/newimages/featured-projects/wlac-plant-facilities.png`,
-    title: 'WLAC Plant Facilities & Shops Replacement',
-    location: 'Los Angeles, California',
-    description:
-      'Designed to support the people who keep the campus running, this facility equips students and staff with the tools, training, and infrastructure needed to maintain and improve the college for generations to come.',
     reverse: true,
   },
   {
     n: '03',
-    img: `${P}/assets/newimages/featured-projects/liberation-park.png`,
-    title: 'Liberation Park Market Hall & Communal Courtyard',
-    location: 'Oakland, California',
+    img: `${P}/assets/newimages/dublin.png`,
+    title: 'Dublin Transit Center Parking Garage',
+    location: 'Dublin, CA',
     description:
-      'Created as a place to gather, celebrate, and grow, Liberation Park provides local entrepreneurs, artists, and residents with a vibrant community destination rooted in culture, connection, and opportunity.',
+      'AE3 served as the Designer / Basis of Design Architect for a new ground-up 5 level, 570 space Transit Oriented Parking Garage for Alameda County in Dublin, CA.',
   },
 ];
 

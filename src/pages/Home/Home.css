@@ -1,0 +1,67 @@
+/* Home — full-width sections, equal left/right gutter */
+
+.home-page {
+  --home-gutter: 4%;
+}
+
+/* Break Bootstrap container max-widths; same inset on every section */
+.home-page #app-content .container,
+.home-page #app-content .container-2 {
+  max-width: none !important;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: var(--home-gutter) !important;
+  padding-right: var(--home-gutter) !important;
+  box-sizing: border-box;
+}
+
+/* Featured projects (no Bootstrap container) */
+.home-page .fp {
+  padding-left: var(--home-gutter);
+  padding-right: var(--home-gutter);
+}
+
+/* Values motif bands */
+.home-page .ae3-values--band,
+.home-page .ae3-values--band-dark {
+  padding-left: var(--home-gutter);
+  padding-right: var(--home-gutter);
+}
+
+/* Hero content / frame lines match gutter */
+.home-page .ae3h__content {
+  left: var(--home-gutter) !important;
+}
+
+.home-page .ae3h__line--l {
+  left: var(--home-gutter) !important;
+}
+
+.home-page .ae3h__line--r {
+  right: var(--home-gutter) !important;
+}
+
+.home-page .ae3h__line--h {
+  left: var(--home-gutter) !important;
+  right: var(--home-gutter) !important;
+}
+
+/* Header on home uses the same gutter */
+.home-page .header .primary-header > .container {
+  max-width: none !important;
+  width: 100%;
+  padding-left: var(--home-gutter) !important;
+  padding-right: var(--home-gutter) !important;
+}
+
+/* Footer matches home gutter */
+.home-page .ae3-site-footer {
+  --sf-pad-x: var(--home-gutter);
+}
+
+@media (max-width: 767px) {
+  .home-page {
+    --home-gutter: 5%;
+  }
+}

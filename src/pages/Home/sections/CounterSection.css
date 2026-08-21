@@ -1,0 +1,112 @@
+/* Counter — shrink office illustration so it doesn't collide with Process heading */
+
+.ae3-counter .counter-element {
+  width: 860px;
+  right: 40px;
+  bottom: -18%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.ae3-counter .counter-element .scroll-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+@media (max-width: 1399px) {
+  .ae3-counter .counter-element {
+    width: 740px;
+    right: 24px;
+    bottom: -10%;
+  }
+}
+
+@media (max-width: 1199px) {
+  .ae3-counter .counter-element {
+    width: min(38vw, 380px);
+    max-width: 380px;
+    right: 16px;
+    bottom: -10%;
+  }
+}
+
+@media (max-width: 991px) {
+  .ae3-counter .counter-element {
+    width: min(36vw, 300px);
+    max-width: 300px;
+    right: 12px;
+    bottom: -4%;
+  }
+}
+
+@media (max-width: 767px) {
+  .ae3-counter.counter-1 {
+    padding-top: 40px;
+    padding-bottom: 56px;
+    overflow: hidden;
+  }
+
+  .ae3-counter .container {
+    padding-left: var(--home-gutter, 5%);
+    padding-right: var(--home-gutter, 5%);
+  }
+
+  .ae3-counter .counter-text {
+    display: none;
+  }
+
+  .ae3-counter .counter-element {
+    display: none;
+  }
+
+  .ae3-counter .row {
+    --bs-gutter-x: 16px;
+    --bs-gutter-y: 28px;
+  }
+
+  .ae3-counter .row > [class*='col-'] {
+    width: 100%;
+    max-width: 100%;
+    flex: 0 0 100%;
+  }
+
+  .ae3-counter .counter-item .title {
+    font-size: clamp(36px, 10vw, 44px);
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+
+  .ae3-counter .counter-item .sub-title {
+    font-size: 17px;
+    margin-bottom: 8px;
+    line-height: 1.25;
+  }
+
+  .ae3-counter .counter-item p {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+}
+
+@media (max-width: 480px) {
+  .ae3-counter.counter-1 {
+    padding: 36px 0 48px;
+  }
+
+  .ae3-counter .row {
+    --bs-gutter-y: 24px;
+  }
+
+  .ae3-counter .counter-item .title {
+    font-size: clamp(32px, 11vw, 40px);
+  }
+
+  .ae3-counter .counter-item .sub-title {
+    font-size: 16px;
+  }
+
+  .ae3-counter .counter-item p {
+    font-size: 13.5px;
+  }
+}

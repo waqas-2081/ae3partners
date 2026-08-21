@@ -555,7 +555,7 @@ ul {
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    row-gap: 25px;
+    row-gap: 15px;
     margin-bottom: 60px
 }
 
@@ -2278,7 +2278,7 @@ ul {
 
 @media only screen and (max-width: 767px) {
     .pt-120 {
-        padding-top: 60px
+        padding-top: 0px
     }
 }
 
@@ -4723,8 +4723,8 @@ ul {
 
 .counter-1 .counter-element {
     position: absolute;
-    bottom: -35%;
-    right: 77px
+    bottom: -25%;
+    right: 70px
 }
 
 @media(max-width: 1199px) {
@@ -4780,13 +4780,13 @@ ul {
 
 .process-section {
     background-color: #eee;
-    padding: 130px 0;
+    padding: 30px 0;
     position: relative
 }
 
 @media only screen and (max-width: 992px) {
     .process-section {
-        padding-bottom: 70px
+        padding-bottom: 20px
     }
 }
 
@@ -4906,7 +4906,7 @@ ul {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 50px
+    margin-top: 30px
 }
 
 .process-text .bottom-text {

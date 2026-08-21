@@ -1,19 +1,31 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home/Home';
 import Projects from './pages/Projects/Projects';
-import ProjectDetailPage, { DUBLIN_SHERIFF_DETAIL_PATH } from './pages/Projects/ProjectDetailPage';
+import ProjectDetailPage, { LIBERATION_PARK_DETAIL_PATH } from './pages/Projects/ProjectDetailPage';
 import Home2 from './pages/Home/Home2';
+import Studio from './pages/Studio/Studio';
+import Expertise from './pages/Expertise/Expertise';
+import Contact from './pages/Contact/Contact';
+import Insights from './pages/Insights/Insights';
+import InsightDetail from './pages/Insights/InsightDetail';
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/home2" element={<Home2 />} />
-        <Route path={DUBLIN_SHERIFF_DETAIL_PATH} element={<ProjectDetailPage />} />
+        <Route path="/studio" element={<Studio />} />
+        <Route path="/expertise" element={<Expertise />} />
+        <Route path="/insights" element={<Insights />} />
+        <Route path="/insights/:slug" element={<InsightDetail />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path={LIBERATION_PARK_DETAIL_PATH} element={<ProjectDetailPage />} />
         <Route
           path="/projects/dublin-alameda-county-sheriffs-office"
-          element={<Navigate to={DUBLIN_SHERIFF_DETAIL_PATH} replace />}
+          element={<Navigate to={LIBERATION_PARK_DETAIL_PATH} replace />}
         />
         <Route path="/projects" element={<Projects />} />
       </Routes>

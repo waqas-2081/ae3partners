@@ -24,7 +24,7 @@
 
 .ae3-values__item {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   opacity: 0;
   transform: translateY(10px);
   animation: ae3ValuesIn 0.7s ease forwards;
@@ -35,15 +35,18 @@
   color: var(--ae3-values-ink);
 }
 
-.ae3-values__dot {
-  color: var(--ae3-values-accent);
-  margin-left: 0.02em;
-  letter-spacing: 0;
+.ae3-values__mark {
+  display: block;
+  width: 40px;
+  height: 30px;
+  margin-left: 0.18em;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 /* ── Band: full-width section divider ───────────────────────── */
 .ae3-values--band {
-  padding: 42px 5%;
+  padding: 42px var(--home-gutter, 5%);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(246, 244, 240, 0.98)),
     repeating-linear-gradient(
@@ -86,7 +89,7 @@
 
 /* Dark band for use on dark sections */
 .ae3-values--band-dark {
-  padding: 42px 5%;
+  padding: 42px var(--home-gutter, 5%);
   background: #0b1220;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -164,6 +167,7 @@
   }
 }
 
+/* Mobile only */
 @media (max-width: 767px) {
   .ae3-values--band,
   .ae3-values--band-dark {
@@ -177,8 +181,38 @@
     display: none;
   }
 
+  .ae3-values--band .ae3-values__inner,
+  .ae3-values--band-dark .ae3-values__inner {
+    font-size: clamp(12px, 3.2vw, 15px);
+    letter-spacing: 0.1em;
+    gap: 0.12em 0.3em;
+    justify-content: center;
+  }
+
+  .ae3-values__item {
+    white-space: nowrap;
+  }
+
   .ae3-values--hero .ae3-values__inner {
-    letter-spacing: 0.18em;
+    letter-spacing: 0.12em;
+    font-size: 10px;
+    gap: 0.08em 0.22em;
+  }
+
+  .ae3-values--footer .ae3-values__inner {
+    letter-spacing: 0.12em;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 400px) {
+  .ae3-values--band .ae3-values__inner,
+  .ae3-values--band-dark .ae3-values__inner {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3em;
+    letter-spacing: 0.16em;
+    font-size: 12px;
   }
 }
 

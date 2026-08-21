@@ -1,16 +1,28 @@
+import { Link } from 'react-router-dom';
+import './AboutSection.css';
+
 const P = process.env.PUBLIC_URL || '';
 
 export default function AboutSection() {
   return (
-    <section className="about-section overflow-hidden">
-      <div className="about-bg" data-background={`${P}/assets/img/bg-img/about-bg.png`}></div>
-      <div className="about-text">
+    <section className="ae3-about about-section overflow-hidden">
+      <div
+        className="about-bg"
+        style={{ backgroundImage: `url(${P}/assets/img/bg-img/about-bg.png)` }}
+        aria-hidden="true"
+      />
+      <div className="about-text" aria-hidden="true">
         <span>AE3</span>
       </div>
       <div className="container">
         <div className="row align-items-center">
           <div className="col-lg-6">
-            <div className="about-content white-content slide-anim" data-delay="0.3" data-offset="100" data-direction="left">
+            <div
+              className="about-content white-content slide-anim"
+              data-delay="0.3"
+              data-offset="100"
+              data-direction="left"
+            >
               <div className="section-heading white-content mb-30">
                 <h4
                   className="sub-heading"
@@ -33,7 +45,7 @@ export default function AboutSection() {
                   'Collaborative, ego-free team approach'
                 ].map((label) => (
                   <li key={label}>
-                    <img src={`${P}/assets/img/icon/about-1.png`} alt="about" />
+                    <img src={`${P}/assets/img/icon/about-1.png`} alt="" />
                     {label}
                   </li>
                 ))}
@@ -44,18 +56,23 @@ export default function AboutSection() {
                 responsive leadership to help clients achieve successful outcomes.
               </p>
               <div className="about-btn">
-                <a href="/" onClick={(e) => e.preventDefault()} className="tl-primary-btn white-btn">
+                <Link to="/studio" className="tl-primary-btn white-btn">
                   Our Team{' '}
                   <span className="icon">
                     <i className="fa-regular fa-arrow-right"></i>
                   </span>
-                </a>
+                </Link>
               </div>
             </div>
           </div>
           <div className="col-lg-6">
-            <div className="about-img slide-anim" data-delay="0.3" data-offset="100" data-direction="right">
-              <img src={`${P}/assets/newimages/whoweare2.jpg`} alt="" />
+            <div
+              className="about-img slide-anim"
+              data-delay="0.3"
+              data-offset="100"
+              data-direction="right"
+            >
+              <img src={`${P}/assets/newimages/whoweare2.jpg`} alt="AE3 Partners team and studio" />
             </div>
           </div>
         </div>
@@ -63,4 +80,3 @@ export default function AboutSection() {
     </section>
   );
 }
-

@@ -13,11 +13,21 @@
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
-/* Align header content with hero heading (ae3h__content uses left: 5%) */
+/* Align header content with home gutter */
 .header .primary-header > .container {
   max-width: 100%;
-  padding-left: 5%;
-  padding-right: 5%;
+  width: 100%;
+  padding-left: var(--home-gutter, 5%);
+  padding-right: var(--home-gutter, 5%);
+  margin: 0 auto;
+}
+
+.header .primary-header-inner {
+  width: 100%;
+  min-height: 78px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  box-sizing: border-box;
 }
 
 .header .primary-header-inner .header-logo img {
@@ -89,56 +99,82 @@
   }
 }
 
-@media (max-width: 991px) {
-  .header .primary-header > .container {
-    padding-left: 10%;
-  }
-}
-
 @media (max-width: 992px) {
+  .header .primary-header > .container {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
   .header .primary-header-inner {
-    flex-wrap: nowrap;
+    flex-wrap: nowrap !important;
     gap: 12px;
     align-items: center;
+    justify-content: space-between;
+    min-height: 64px;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
   }
 
   .header .primary-header-inner .header-left-wrap {
-    flex: 1;
+    flex: 1 1 auto;
     min-width: 0;
-    column-gap: 16px;
-  }
-
-  .header .primary-header-inner .header-logo img {
-    max-width: min(110px, 40vw);
-    height: auto;
-  }
-
-  .header .primary-header-inner .header-right-wrap {
-    flex-shrink: 0;
-    column-gap: 10px;
+    column-gap: 12px;
     align-items: center;
   }
 
-  .header .header-social-wrap {
-    display: none;
-    margin-right: 0;
-    gap: 8px;
+  .header .primary-header-inner .header-logo {
+    flex-shrink: 1;
+    min-width: 0;
   }
 
-  .header .header-social-link {
-    width: 30px;
-    height: 30px;
+  .header .primary-header-inner .header-logo a {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+  }
+
+  .header .primary-header-inner .header-logo img {
+    max-width: 108px !important;
+    width: auto !important;
+    height: auto !important;
+    max-height: 40px;
+    object-fit: contain;
+  }
+
+  .header .primary-header-inner .header-menu-wrap {
+    display: none !important;
+  }
+
+  .header .primary-header-inner .header-right-wrap {
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    column-gap: 8px;
+    align-items: center;
+    margin-left: auto;
+  }
+
+  .header .header-social-wrap {
+    display: none !important;
+    margin-right: 0;
+  }
+
+  .header .header-right,
+  .header .header-right-item {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
   }
 
   .header .ae3-hamburger-btn {
-    display: flex;
+    display: flex !important;
     flex-direction: column;
     justify-content: center;
     align-items: flex-end;
-    row-gap: 7px;
-    width: 48px;
-    height: 48px;
-    padding: 0 11px;
+    row-gap: 5px;
+    width: 44px;
+    height: 44px;
+    padding: 0 10px;
     margin: 0;
     border: none;
     border-radius: 10px;
@@ -150,7 +186,7 @@
 
   .header .ae3-hamburger-btn span {
     display: block;
-    height: 3px;
+    height: 2.5px;
     border-radius: 2px;
     background: #002f87;
     margin-left: auto;
@@ -158,23 +194,25 @@
   }
 
   .header .ae3-hamburger-btn span:nth-child(1) {
-    width: 24px;
-  }
-
-  .header .ae3-hamburger-btn span:nth-child(2) {
     width: 20px;
   }
 
+  .header .ae3-hamburger-btn span:nth-child(2) {
+    width: 16px;
+  }
+
   .header .ae3-hamburger-btn span:nth-child(3) {
-    width: 14px;
+    width: 12px;
   }
 
-  .header .ae3-hamburger-btn:hover span:nth-child(1) {
-    width: 26px;
+  .header .ae3-hamburger-btn:hover span:nth-child(1),
+  .header .ae3-hamburger-btn:focus-visible span:nth-child(1) {
+    width: 22px;
   }
 
-  .header .ae3-hamburger-btn:hover span:nth-child(3) {
-    width: 18px;
+  .header .ae3-hamburger-btn:hover span:nth-child(3),
+  .header .ae3-hamburger-btn:focus-visible span:nth-child(3) {
+    width: 15px;
   }
 
   /* Template overlay z-index (10) sits under .header (99); raise drawer above header but below pd-lightbox (10050). */
@@ -185,11 +223,30 @@
   .mobile-side-menu {
     z-index: 10045 !important;
   }
+
+  .header .primary-header.fixed .primary-header-inner {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
 }
 
-@media (max-width: 992px) {
-  .header .primary-header.fixed .primary-header-inner {
-    padding-top: 12px;
-    padding-bottom: 12px;
+@media (max-width: 576px) {
+  .header .primary-header > .container {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  .header .primary-header-inner {
+    min-height: 58px;
+  }
+
+  .header .primary-header-inner .header-logo img {
+    max-width: 96px !important;
+    max-height: 36px;
+  }
+
+  .header .ae3-hamburger-btn {
+    width: 42px;
+    height: 42px;
   }
 }
