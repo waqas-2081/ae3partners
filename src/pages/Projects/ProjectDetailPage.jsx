@@ -1,77 +1,37 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { ensureTemplateScriptsLoaded } from '../../template/loadTemplateScripts';
 import Header from '../Home/components/Header';
 import MobileSideMenu from '../Home/components/MobileSideMenu';
 import SiteFooter from '../../components/SiteFooter/SiteFooter';
 import GallerySection from '../Home/sections/GallerySection';
 import ScrollPercentage from '../Home/components/ScrollPercentage';
+import { fetchProjectBySlug } from '../../api/projectsApi';
 import './ProjectsPage.css';
 import './ProjectDetailPage.css';
 
-const P = process.env.PUBLIC_URL || '';
-const publicImage = (file) => `${P}/assets/newimages/${file}`;
-
-/** In-app URL for the Liberation Park project detail page. */
+/** @deprecated Kept for old bookmarks / redirects */
 export const LIBERATION_PARK_DETAIL_PATH = '/projects/dublin-transit-center-parking-garage';
 
 /** @deprecated Use LIBERATION_PARK_DETAIL_PATH */
 export const DUBLIN_SHERIFF_DETAIL_PATH = LIBERATION_PARK_DETAIL_PATH;
 
-const LIBERATION_PARK_IDS = new Set(['feat-liberation-park', 'civ-liberation']);
-
-export function projectHasLiberationParkDetail(projectId) {
-  return LIBERATION_PARK_IDS.has(projectId);
+/** @deprecated Detail pages are now slug-based for all projects */
+export function projectHasLiberationParkDetail() {
+  return true;
 }
 
 /** @deprecated Use projectHasLiberationParkDetail */
-export function projectHasDublinSheriffDetail(projectId) {
-  return projectHasLiberationParkDetail(projectId);
+export function projectHasDublinSheriffDetail() {
+  return true;
 }
 
-const HERO_IMAGE = publicImage('projects/liberation-park/1.jpg');
-
-const GALLERY_IMAGES = [
-  {
-    src: publicImage('projects/liberation-park/1.jpg'),
-    caption: 'Market hall exterior at dusk',
-  },
-  {
-    src: publicImage('projects/liberation-park/2.jpg'),
-    caption: 'Communal courtyard perspective',
-  },
-  {
-    src: publicImage('projects/liberation-park/3.jpg'),
-    caption: 'Open-air marketplace activation',
-  },
-  {
-    src: publicImage('featured-projects/liberation-park.png'),
-    caption: 'Liberation Park vision rendering',
-  },
-  {
-    src: publicImage('insights/liberation-park.jpg'),
-    caption: 'Community hub in East Oakland',
-  },
-  {
-    src: publicImage('gallery-ribbon/liberation-park.png'),
-    caption: 'Cultural marketplace facade',
-  },
-];
-
-const PROJECT_SPECS = [
-  { id: 'sector', label: 'Sector', value: 'Commercial & Civic' },
-  { id: 'location', label: 'Location', value: 'Oakland, CA' },
-  { id: 'role', label: 'Role', value: 'Prime Architect' },
-  { id: 'size', label: 'Size', value: '53,000 SF' },
-  { id: 'status', label: 'Status', value: 'Ongoing', live: true },
-  {
-    id: 'related',
-    label: 'Projects To Be Listed Only',
-    related: [
-      'GSA, Ronald V. Dellums Federal Building',
-      'GSA, 50 United Nations Plaza, Federal Office Building, Pacific Rim 9 Regional Office Realignment Project',
-    ],
-  },
+const SPEC_FIELDS = [
+  { id: 'sector', label: 'Sector', key: 'sector' },
+  { id: 'location', label: 'Location', key: 'location' },
+  { id: 'role', label: 'Role', key: 'role' },
+  { id: 'size', label: 'Size', key: 'size' },
+  { id: 'status', label: 'Status', key: 'status' },
 ];
 
 function SpecIcon({ id }) {
@@ -113,7 +73,78 @@ function SpecIcon({ id }) {
   return icons[id] ?? icons.sector;
 }
 
-function usePdReveal(rootRef) {
+function buildSpecs(project) {
+  const specs = project?.specs || {};
+  const cards = SPEC_FIELDS.filter((field) => specs[field.key])
+    .map((field) => ({
+      id: field.id,
+      label: field.label,
+      value: specs[field.key],
+      live: field.id === 'status' ? Boolean(specs.status_is_live) : false,
+    }));
+
+  const related = Array.isArray(specs.related_projects)
+    ? specs.related_projects.filter(Boolean)
+    : [];
+
+  if (related.length) {
+    cards.push({
+      id: 'related',
+      label: 'Projects To Be Listed Only',
+      related,
+    });
+  }
+
+  return cards;
+}
+
+function buildGallery(project) {
+  const fromApi = Array.isArray(project?.gallery)
+    ? project.gallery
+        .filter((img) => img?.src)
+        .map((img) => ({
+          id: img.id,
+          src: img.src,
+          caption: img.caption || project.title || 'Project image',
+        }))
+    : [];
+
+  if (fromApi.length) return fromApi;
+
+  if (project?.image) {
+    return [
+      {
+        id: 'hero',
+        src: project.image,
+        caption: project.title || 'Project image',
+      },
+    ];
+  }
+
+  return [];
+}
+
+function DescriptionBody({ html, fallback }) {
+  const content = (html && String(html).trim()) || '';
+  if (content) {
+    return (
+      <div
+        className="pd-showcase__copy pd-reveal pd-is-visible"
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+    );
+  }
+  if (fallback) {
+    return (
+      <div className="pd-showcase__copy">
+        <p className="pd-reveal pd-is-visible">{fallback}</p>
+      </div>
+    );
+  }
+  return null;
+}
+
+function usePdReveal(rootRef, depsKey) {
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return undefined;
@@ -130,27 +161,69 @@ function usePdReveal(rootRef) {
       },
       { threshold: 0.08, rootMargin: '0px 0px -32px 0px' }
     );
-    els.forEach((el) => io.observe(el));
+    els.forEach((el) => {
+      el.classList.remove('pd-is-visible');
+      io.observe(el);
+    });
     return () => io.disconnect();
-  }, [rootRef]);
+  }, [rootRef, depsKey]);
 }
 
 export default function ProjectDetailPage() {
+  const { slug } = useParams();
   const rootRef = useRef(null);
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const gallerySrcs = GALLERY_IMAGES.map((item) => item.src);
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+      setError(null);
+      setProject(null);
+      setLightboxIndex(null);
+      try {
+        const data = await fetchProjectBySlug(slug);
+        if (!cancelled) setProject(data);
+      } catch (err) {
+        if (!cancelled) {
+          setError(err?.message || 'Failed to load project');
+          setProject(null);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    if (slug) load();
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
+  const galleryImages = useMemo(() => buildGallery(project), [project]);
+  const projectSpecs = useMemo(() => buildSpecs(project), [project]);
+  const gallerySrcs = useMemo(() => galleryImages.map((item) => item.src), [galleryImages]);
+  const heroImage = project?.image || galleryImages[0]?.src || '';
+  const captionBits = [
+    project?.specs?.location,
+    project?.specs?.size,
+    project?.specs?.role,
+  ].filter(Boolean);
 
   const closeLightbox = useCallback(() => setLightboxIndex(null), []);
   const goLightboxPrev = useCallback(() => {
     setLightboxIndex((i) => {
-      if (i === null) return null;
+      if (i === null || !gallerySrcs.length) return null;
       return i <= 0 ? gallerySrcs.length - 1 : i - 1;
     });
   }, [gallerySrcs.length]);
   const goLightboxNext = useCallback(() => {
     setLightboxIndex((i) => {
-      if (i === null) return null;
+      if (i === null || !gallerySrcs.length) return null;
       return i >= gallerySrcs.length - 1 ? 0 : i + 1;
     });
   }, [gallerySrcs.length]);
@@ -168,13 +241,13 @@ export default function ProjectDetailPage() {
     } catch (_) {
       /* ignore */
     }
-  }, []);
+  }, [slug]);
 
   useEffect(() => {
     ensureTemplateScriptsLoaded().catch(() => {});
   }, []);
 
-  usePdReveal(rootRef);
+  usePdReveal(rootRef, project?.id || slug || 'empty');
 
   useEffect(() => {
     if (lightboxIndex === null) return undefined;
@@ -199,151 +272,181 @@ export default function ProjectDetailPage() {
 
       <div id="app-wrapper" className="projects-page pd-page studio-page" ref={rootRef}>
         <div id="app-content" className="studio-reveal-content">
-          
-
-          <section className="pd-showcase" aria-label="Project overview">
-            <div className="pd-showcase__inner">
-              <div className="pd-showcase__grid">
-                <figure className="pd-showcase__media pd-reveal">
-                  <div className="pd-showcase__media-frame">
-                    <img
-                      src={HERO_IMAGE}
-                      alt="Liberation Park Market Hall and Communal Courtyard rendering"
-                      loading="eager"
-                    />
-                  </div>
-                </figure>
-
-                <div className="pd-showcase__body">
-                  <span className="pd-showcase__watermark" aria-hidden="true">
-                    01
-                  </span>
-                  <div className="pd-showcase__body-inner">
-                    <div className="pd-showcase__label-row pd-reveal">
-                      <span className="pd-showcase__label-line" aria-hidden="true" />
-                      <span className="pd-showcase__label">Project Overview</span>
-                    </div>
-                    <h2 className="pd-showcase__title pd-reveal">
-                      Liberation Park Market Hall &amp; Communal Courtyard | Black Cultural Zone Community Development
-                      Corporation
-                    </h2>
-                    <div className="pd-showcase__copy">
-                      <p className="pd-reveal">
-                        AE3 is leading the design of the 53,000 SF Liberation Park Market Hall and Communal Courtyard in
-                        East Oakland, transforming a former parking lot into a flexible marketplace and public gathering
-                        space. The project supports small businesses, food vendors, and artisans through modular stalls,
-                        open-air circulation, and solar-ready canopy structures designed for long-term adaptability. The
-                        site is organized to accommodate both daily use and larger community events, requiring
-                        coordination of infrastructure, circulation, and utility systems.
-                      </p>
-                      <p className="pd-reveal">
-                        A central courtyard provides space for performances, markets, and informal gatherings, supported
-                        by native landscaping and durable site elements. AE3 is working closely with stakeholders to align
-                        the program, site constraints, and long-term operational needs. The project demonstrates the
-                        integration of flexible program space within an urban environment while supporting economic
-                        activity and community use.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <p className="pd-showcase__caption pd-reveal">
-                  East Oakland · 53,000 SF · Prime Architect
+          {loading ? (
+            <section className="pd-showcase" aria-busy="true">
+              <div className="pd-showcase__inner">
+                <p className="pd-reveal pd-is-visible" style={{ padding: '4rem 1.5rem' }}>
+                  Loading project…
                 </p>
               </div>
-            </div>
-          </section>
+            </section>
+          ) : null}
 
-          <section className="pd-specs-cards" aria-label="Project specifications">
-            <div className="pd-specs-cards__inner">
-              <div className="pd-specs-cards__head pd-reveal">
-                <p className="pd-specs-cards__eyebrow">
-                  <span className="pd-specs-cards__eyebrow-line" aria-hidden="true" />
-                  Project Details
-                </p>
-                <h2 className="pd-specs-cards__title">Location &amp; Scope</h2>
-                <p className="pd-specs-cards__lead">
-                  Key project information at a glance — sector, location, role, scale, and current status.
-                </p>
-              </div>
-
-              <div className="pd-specs-cards__grid">
-                {PROJECT_SPECS.map((spec, i) => (
-                  <article
-                    key={spec.id}
-                    className={`pd-spec-card pd-spec-card--${spec.id} pd-reveal`}
-                    style={{ '--pd-i': i }}
-                  >
-                    <span className="pd-spec-card__index" aria-hidden="true">
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <span className="pd-spec-card__icon" aria-hidden="true">
-                      <SpecIcon id={spec.id} />
-                    </span>
-                    <p className="pd-spec-card__label">{spec.label}</p>
-                    {spec.related ? (
-                      <ul className="pd-spec-card__list">
-                        {spec.related.map((item) => (
-                          <li key={item}>{item}</li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="pd-spec-card__value">
-                        {spec.live ? (
-                          <>
-                            <span className="pd-spec-card__live" aria-hidden="true" />
-                            {spec.value}
-                          </>
-                        ) : (
-                          spec.value
-                        )}
-                      </p>
-                    )}
-                  </article>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section className="pd-gallery-full" aria-labelledby="pd-gallery-title">
-            <div className="pd-gallery-full__inner">
-              <div className="pd-gallery-full__head pd-reveal">
-                <div className="pd-gallery-full__head-left">
-                  <p className="pd-gallery-full__eyebrow">
-                    <span className="pd-gallery-full__eyebrow-line" aria-hidden="true" />
-                    Visual Story
+          {!loading && error ? (
+            <section className="pd-showcase">
+              <div className="pd-showcase__inner">
+                <div style={{ padding: '4rem 1.5rem' }}>
+                  <p className="pd-reveal pd-is-visible" style={{ color: '#b42318' }}>
+                    Project not found or API unavailable.
                   </p>
-                  <h2 id="pd-gallery-title" className="pd-gallery-full__title">
-                    Our Projects Gallery
-                  </h2>
+                  <p className="pd-reveal pd-is-visible">
+                    <Link to="/projects">← Back to all projects</Link>
+                  </p>
                 </div>
-                <p className="pd-gallery-full__lead">
-                  Renderings from the Liberation Park Market Hall &amp; Communal Courtyard a catalytic hub for culture,
-                  commerce, and community in East Oakland.
-                </p>
               </div>
+            </section>
+          ) : null}
 
-              <div className="pd-gallery-full__grid">
-                {GALLERY_IMAGES.map((item, i) => (
-                  <button
-                    key={item.src + String(i)}
-                    type="button"
-                    className="pd-gallery-full__cell pd-reveal"
-                    style={{ '--pd-i': i }}
-                    onClick={() => setLightboxIndex(i)}
-                    aria-label={`Open ${item.caption} in gallery`}
-                  >
-                    <img src={item.src} alt={item.caption} loading="lazy" />
-                    <span className="pd-gallery-full__cell-overlay" aria-hidden="true" />
-                    <span className="pd-gallery-full__cell-caption">{item.caption}</span>
-                    <span className="pd-gallery-full__cell-zoom" aria-hidden="true">
-                      +
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </section>
+          {!loading && !error && project ? (
+            <>
+              <section className="pd-showcase" aria-label="Project overview">
+                <div className="pd-showcase__inner">
+                  <div className="pd-showcase__grid">
+                    <figure className="pd-showcase__media pd-reveal">
+                      <div className="pd-showcase__media-frame">
+                        {heroImage ? (
+                          <img
+                            src={heroImage}
+                            alt={project.title || 'Project'}
+                            loading="eager"
+                          />
+                        ) : (
+                          <div
+                            aria-hidden
+                            style={{
+                              width: '100%',
+                              minHeight: 320,
+                              background: '#e8eef5',
+                            }}
+                          />
+                        )}
+                      </div>
+                    </figure>
+
+                    <div className="pd-showcase__body">
+                      <span className="pd-showcase__watermark" aria-hidden="true">
+                        01
+                      </span>
+                      <div className="pd-showcase__body-inner">
+                        <div className="pd-showcase__label-row pd-reveal">
+                          <span className="pd-showcase__label-line" aria-hidden="true" />
+                          <span className="pd-showcase__label">
+                            {project.category_label || 'Project Overview'}
+                          </span>
+                        </div>
+                        <h2 className="pd-showcase__title pd-reveal">{project.title}</h2>
+                        <DescriptionBody
+                          html={project.long_description}
+                          fallback={project.short_description}
+                        />
+                      </div>
+                    </div>
+
+                    {captionBits.length ? (
+                      <p className="pd-showcase__caption pd-reveal">
+                        {captionBits.join(' · ')}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+              </section>
+
+              {projectSpecs.length ? (
+                <section className="pd-specs-cards" aria-label="Project specifications">
+                  <div className="pd-specs-cards__inner">
+                    <div className="pd-specs-cards__head pd-reveal">
+                      <p className="pd-specs-cards__eyebrow">
+                        <span className="pd-specs-cards__eyebrow-line" aria-hidden="true" />
+                        Project Details
+                      </p>
+                      <h2 className="pd-specs-cards__title">Location &amp; Scope</h2>
+                      <p className="pd-specs-cards__lead">
+                        Key project information at a glance — sector, location, role, scale, and current status.
+                      </p>
+                    </div>
+
+                    <div className="pd-specs-cards__grid">
+                      {projectSpecs.map((spec, i) => (
+                        <article
+                          key={spec.id}
+                          className={`pd-spec-card pd-spec-card--${spec.id} pd-reveal`}
+                          style={{ '--pd-i': i }}
+                        >
+                          <span className="pd-spec-card__index" aria-hidden="true">
+                            {String(i + 1).padStart(2, '0')}
+                          </span>
+                          <span className="pd-spec-card__icon" aria-hidden="true">
+                            <SpecIcon id={spec.id} />
+                          </span>
+                          <p className="pd-spec-card__label">{spec.label}</p>
+                          {spec.related ? (
+                            <ul className="pd-spec-card__list">
+                              {spec.related.map((item) => (
+                                <li key={item}>{item}</li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="pd-spec-card__value">
+                              {spec.live ? (
+                                <>
+                                  <span className="pd-spec-card__live" aria-hidden="true" />
+                                  {spec.value}
+                                </>
+                              ) : (
+                                spec.value
+                              )}
+                            </p>
+                          )}
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              ) : null}
+
+              {galleryImages.length ? (
+                <section className="pd-gallery-full" aria-labelledby="pd-gallery-title">
+                  <div className="pd-gallery-full__inner">
+                    <div className="pd-gallery-full__head pd-reveal">
+                      <div className="pd-gallery-full__head-left">
+                        <p className="pd-gallery-full__eyebrow">
+                          <span className="pd-gallery-full__eyebrow-line" aria-hidden="true" />
+                          Visual Story
+                        </p>
+                        <h2 id="pd-gallery-title" className="pd-gallery-full__title">
+                          Our Projects Gallery
+                        </h2>
+                      </div>
+                      <p className="pd-gallery-full__lead">
+                        {project.short_description ||
+                          `Images from ${project.title}.`}
+                      </p>
+                    </div>
+
+                    <div className="pd-gallery-full__grid">
+                      {galleryImages.map((item, i) => (
+                        <button
+                          key={(item.id != null ? String(item.id) : item.src) + String(i)}
+                          type="button"
+                          className="pd-gallery-full__cell pd-reveal"
+                          style={{ '--pd-i': i }}
+                          onClick={() => setLightboxIndex(i)}
+                          aria-label={`Open ${item.caption} in gallery`}
+                        >
+                          <img src={item.src} alt={item.caption} loading="lazy" />
+                          <span className="pd-gallery-full__cell-overlay" aria-hidden="true" />
+                          <span className="pd-gallery-full__cell-caption">{item.caption}</span>
+                          <span className="pd-gallery-full__cell-zoom" aria-hidden="true">
+                            +
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              ) : null}
+            </>
+          ) : null}
 
           <section className="pd-contact-split" aria-labelledby="pd-contact-heading">
             <div className="pd-contact-split__left">
@@ -425,7 +528,7 @@ export default function ProjectDetailPage() {
         <SiteFooter />
       </div>
 
-      {lightboxIndex !== null ? (
+      {lightboxIndex !== null && gallerySrcs.length ? (
         <div className="pd-lightbox" role="dialog" aria-modal="true" aria-label="Image gallery">
           <button
             type="button"
