@@ -10,46 +10,35 @@ import { fetchProjectCategories, fetchProjects } from '../../api/projectsApi';
 import './ProjectsPage.css';
 
 const P = process.env.PUBLIC_URL || '';
+const SLIDE_INTERVAL_MS = 5200;
+/** Featured slider: first N projects from API (by sort_order) */
+const FEATURED_SLIDER_LIMIT = 3;
 
-/** Shown in the featured slider — same projects as home `ProjectBigSection`. */
-const FEATURED_PROJECTS = [
+/** High-res local images for featured slider (API thumbs can look soft/blurry). */
+const FEATURED_IMAGE_OVERRIDES = [
   {
-    id: 'feat-coalameda-aviation',
-    title: 'College of Alameda Aviation Complex',
-    location: 'Alameda, California',
-    description:
-      'A new gateway for aviation education, providing students with hands-on training, modern learning environments, and pathways to careers in one of the region\'s most vital industries.',
-    image: `${P}/assets/newimages/featured-projects/college-of-alameda-aviation.png`,
+    match: /liberation-park/i,
+    image: `${P}/assets/newimages/featured-projects/liberation-park-featured.png`,
   },
   {
-    id: 'feat-wlac-plant',
-    title: 'WLAC Plant Facilities & Shops Replacement',
-    location: 'Los Angeles, California',
-    description:
-      'Designed to support the people who keep the campus running, this facility equips students and staff with the tools, training, and infrastructure needed to maintain and improve the college for generations to come.',
-    image: `${P}/assets/newimages/featured-projects/wlac-plant-facilities.png`,
-  },
-  {
-    id: 'feat-liberation-park',
-    title: 'Liberation Park Market Hall & Communal Courtyard',
-    location: 'Oakland, California',
-    description:
-      'Created as a place to gather, celebrate, and grow, Liberation Park provides local entrepreneurs, artists, and residents with a vibrant community destination rooted in culture, connection, and opportunity.',
-    image: `${P}/assets/newimages/featured-projects/liberation-park.png`,
+    match: /kingmakers/i,
+    image: `${P}/assets/newimages/featured-projects/kingmakers-featured.png`,
   },
 ];
 
-const SLIDE_INTERVAL_MS = 5200;
-const FEATURED_FOR_SLIDER = FEATURED_PROJECTS;
-/** All-projects grid: max cards shown (per active tab) */
-const ALL_PROJECTS_GRID_LIMIT = 6;
+function featuredSlideImage(proj) {
+  if (!proj) return '';
+  const haystack = `${proj.slug || ''} ${proj.title || ''}`;
+  const override = FEATURED_IMAGE_OVERRIDES.find((row) => row.match.test(haystack));
+  return override?.image || proj.image || '';
+}
 
-function useScrollReveal(rootRef) {
+function useScrollReveal(rootRef, revealKey = '') {
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return undefined;
     const els = Array.from(root.querySelectorAll('.pp-reveal')).filter(
-      (el) => !el.closest('.pp-project-grid')
+      (el) => !el.closest('.pp-project-grid') && !el.closest('.pp-slider-viewport')
     );
     if (!els.length) return undefined;
     const io = new IntersectionObserver(
@@ -65,7 +54,15 @@ function useScrollReveal(rootRef) {
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, [rootRef]);
+  }, [rootRef, revealKey]);
+}
+
+function useFeaturedSliderReveal(viewportRef, featuredKey) {
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport || !featuredKey) return undefined;
+    viewport.classList.add('pp-is-visible');
+  }, [viewportRef, featuredKey]);
 }
 
 function useProjectGridReveal(gridRef, activeTab, projectsKey) {
@@ -97,6 +94,55 @@ function projectCardKey(proj) {
   return proj.slug || String(proj.id);
 }
 
+function FeaturedSliderSkeleton() {
+  return (
+    <div className="pp-skel-featured" aria-hidden="true">
+      <div className="pp-skel-featured-inner">
+        <span className="pp-skel pp-skel-tag" />
+        <span className="pp-skel pp-skel-title" />
+        <span className="pp-skel pp-skel-meta" />
+        <span className="pp-skel pp-skel-btn" />
+      </div>
+    </div>
+  );
+}
+
+function ProjectTabsSkeleton() {
+  return (
+    <div className="pp-tabs pp-skel-tabs" aria-hidden="true">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <span
+          key={i}
+          className="pp-skel pp-skel-tab"
+          style={{ width: i === 0 ? 128 : 96 + (i % 3) * 12 }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ProjectGridSkeleton() {
+  return (
+    <div className="pp-project-grid" aria-hidden="true">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <article key={i} className="pp-project-card pp-skel-card">
+          <div className="pp-card-media pp-skel pp-skel-media" />
+          <div className="pp-card-body">
+            <div className="pp-card-meta">
+              <span className="pp-skel pp-skel-chip" />
+              <span className="pp-skel pp-skel-chip pp-skel-chip--sm" />
+            </div>
+            <span className="pp-skel pp-skel-card-title" />
+            <span className="pp-skel pp-skel-card-desc" />
+            <span className="pp-skel pp-skel-card-desc pp-skel-card-desc--short" />
+            <span className="pp-skel pp-skel-link" />
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
 export default function Projects() {
   const [scriptsReady, setScriptsReady] = useState(false);
   const [slideIdx, setSlideIdx] = useState(0);
@@ -109,8 +155,15 @@ export default function Projects() {
   const rootRef = useRef(null);
   const gridRef = useRef(null);
   const featuredRef = useRef(null);
+  const featuredViewportRef = useRef(null);
   slideIdxRef.current = slideIdx;
-  const slideCount = FEATURED_FOR_SLIDER.length;
+
+  const featuredProjects = useMemo(
+    () => projects.slice(0, FEATURED_SLIDER_LIMIT),
+    [projects]
+  );
+  const featuredKey = featuredProjects.map((p) => p.slug || p.id).join('|');
+  const slideCount = featuredProjects.length;
 
   const projectTabs = useMemo(
     () => [
@@ -133,6 +186,7 @@ export default function Projects() {
 
   const goSlide = useCallback(
     (next) => {
+      if (!slideCount) return;
       setSlideIdx((next + slideCount) % slideCount);
     },
     [slideCount]
@@ -143,10 +197,10 @@ export default function Projects() {
     return projects.filter((p) => p.category === activeTab);
   }, [activeTab, projects]);
 
-  const gridProjects = filteredProjects.slice(0, ALL_PROJECTS_GRID_LIMIT);
-  const projectsKey = gridProjects.map(projectCardKey).join('|');
+  const projectsKey = filteredProjects.map(projectCardKey).join('|');
 
-  useScrollReveal(rootRef);
+  useScrollReveal(rootRef, featuredKey);
+  useFeaturedSliderReveal(featuredViewportRef, featuredKey);
   useProjectGridReveal(gridRef, activeTab, projectsKey);
 
   useEffect(() => {
@@ -215,18 +269,28 @@ export default function Projects() {
   }, []);
 
   useEffect(() => {
+    setSlideIdx(0);
+  }, [featuredKey]);
+
+  useEffect(() => {
+    if (!slideCount) return undefined;
     const id = window.setInterval(() => {
       goSlide(slideIdxRef.current + 1);
     }, SLIDE_INTERVAL_MS);
     return () => window.clearInterval(id);
-  }, [goSlide]);
+  }, [goSlide, slideCount]);
 
   return (
     <>
       <Header />
       <MobileSideMenu />
 
-      <div id="app-wrapper" className="projects-page studio-page" ref={rootRef}>
+      <div
+        id="app-wrapper"
+        className="projects-page studio-page"
+        ref={rootRef}
+        aria-busy={listLoading}
+      >
         <div id="app-content" className="studio-reveal-content">
           <section className="pp-section pp-featured" id="pp-featured" ref={featuredRef}>
             <div className="pp-container pp-container--head">
@@ -244,6 +308,7 @@ export default function Projects() {
                     className="pp-slider-btn"
                     aria-label="Previous featured project"
                     onClick={() => goSlide(slideIdx - 1)}
+                    disabled={!slideCount}
                   >
                     ←
                   </button>
@@ -252,6 +317,7 @@ export default function Projects() {
                     className="pp-slider-btn"
                     aria-label="Next featured project"
                     onClick={() => goSlide(slideIdx + 1)}
+                    disabled={!slideCount}
                   >
                     →
                   </button>
@@ -259,49 +325,66 @@ export default function Projects() {
               </div>
             </div>
 
+            {listLoading ? <FeaturedSliderSkeleton /> : null}
+
+            {!listLoading && featuredProjects.length > 0 ? (
+              <>
             <div
-              className="pp-slider-viewport pp-reveal"
-              style={{ '--pp-slide-count': Math.max(1, slideCount) }}
+              ref={featuredViewportRef}
+              className="pp-slider-viewport pp-reveal pp-is-visible"
+              style={{ '--pp-slide-count': slideCount }}
             >
               <div
                 className="pp-slider-track"
                 style={{
-                  transform: `translateX(-${(slideIdx * 100) / Math.max(1, slideCount)}%)`,
+                  transform: `translateX(-${(slideIdx * 100) / slideCount}%)`,
                 }}
               >
-                {FEATURED_FOR_SLIDER.map((proj, i) => (
+                {featuredProjects.map((proj, i) => {
+                  const slideImage = featuredSlideImage(proj);
+                  return (
                   <article
-                    key={proj.id}
+                    key={projectCardKey(proj)}
                     className={`pp-slide ${i === slideIdx ? 'pp-is-active' : ''}`}
                     aria-hidden={i !== slideIdx}
                   >
-                    <img src={proj.image} alt="" />
+                    {slideImage ? (
+                      <img src={slideImage} alt="" loading={i === 0 ? 'eager' : 'lazy'} />
+                    ) : (
+                      <div
+                        aria-hidden
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          minHeight: 420,
+                          background: '#1a2744',
+                        }}
+                      />
+                    )}
                     <div className="pp-slide-overlay" />
                     <div className="pp-slide-content">
-                      <span className="pp-slide-tag">{proj.location}</span>
+                      <span className="pp-slide-tag">{proj.location || 'California'}</span>
                       <h3 className="pp-slide-title">{proj.title}</h3>
-                      <p className="pp-slide-meta">{proj.description}</p>
-                      <a
-                        href="#pp-all"
-                        className="pp-slide-link"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          document.getElementById('pp-all')?.scrollIntoView({ behavior: 'smooth' });
-                        }}
-                      >
-                        Explore project →
-                      </a>
+                      <p className="pp-slide-meta">{proj.excerpt || ''}</p>
+                      {proj.slug ? (
+                        <Link className="pp-slide-link" to={`/projects/${proj.slug}`}>
+                          Explore project →
+                        </Link>
+                      ) : (
+                        <span className="pp-slide-link">Explore project →</span>
+                      )}
                     </div>
                   </article>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
             <div className="pp-container pp-container--head">
               <div className="pp-slider-dots" role="tablist" aria-label="Featured slides">
-                {FEATURED_FOR_SLIDER.map((proj, i) => (
+                {featuredProjects.map((proj, i) => (
                   <button
-                    key={proj.id}
+                    key={projectCardKey(proj)}
                     type="button"
                     role="tab"
                     aria-selected={i === slideIdx}
@@ -312,6 +395,8 @@ export default function Projects() {
                 ))}
               </div>
             </div>
+              </>
+            ) : null}
           </section>
 
           <section className="pp-section pp-all" id="pp-all">
@@ -322,42 +407,43 @@ export default function Projects() {
                 </div>
               </div>
 
-              <div className="pp-tabs pp-reveal" role="tablist" aria-label="Project categories">
-                {projectTabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={activeTab === tab.id}
-                    className={`pp-tab-btn ${activeTab === tab.id ? 'pp-is-active' : ''}`}
-                    onClick={() => setActiveTab(tab.id)}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
               {listLoading ? (
-                <p className="pp-reveal pp-is-visible" style={{ marginTop: '1.5rem' }}>
-                  Loading projects…
-                </p>
-              ) : null}
+                <ProjectTabsSkeleton />
+              ) : (
+                <div className="pp-tabs pp-reveal" role="tablist" aria-label="Project categories">
+                  {projectTabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={activeTab === tab.id}
+                      className={`pp-tab-btn ${activeTab === tab.id ? 'pp-is-active' : ''}`}
+                      onClick={() => setActiveTab(tab.id)}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {listError ? (
                 <p className="pp-reveal pp-is-visible" style={{ marginTop: '1.5rem', color: '#b42318' }}>
                   Could not load projects. Make sure the API is running at{' '}
-                  {process.env.REACT_APP_API_URL || 'http://localhost:8000'}.
+                  {process.env.REACT_APP_API_URL || 'http://ae3partnersadmin.testdemolink.com'}.
                 </p>
               ) : null}
 
-              {!listLoading && !listError && gridProjects.length === 0 ? (
+              {!listLoading && !listError && filteredProjects.length === 0 ? (
                 <p className="pp-reveal pp-is-visible" style={{ marginTop: '1.5rem' }}>
                   No projects in this category yet.
                 </p>
               ) : null}
 
+              {listLoading ? (
+                <ProjectGridSkeleton />
+              ) : (
               <div className="pp-project-grid" ref={gridRef}>
-                {gridProjects.map((proj, idx) => (
+                {filteredProjects.map((proj, idx) => (
                   <article
                     key={projectCardKey(proj)}
                     className={`pp-project-card pp-reveal ${
@@ -404,6 +490,7 @@ export default function Projects() {
                   </article>
                 ))}
               </div>
+              )}
             </div>
           </section>
 

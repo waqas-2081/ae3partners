@@ -1,6 +1,23 @@
 const API_BASE = (
-  process.env.REACT_APP_API_URL || 'https://ae3partnersadmin.testdemolink.com'
+  process.env.REACT_APP_API_URL || 'http://ae3partnersadmin.testdemolink.com'
 ).replace(/\/$/, '');
+
+/** Avoid mixed-content blocks when frontend is served over HTTPS. */
+export function normalizeMediaUrl(url) {
+  if (!url || typeof url !== 'string') return url;
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    return url.replace(/^http:\/\//i, 'https://');
+  }
+  return url;
+}
+
+function normalizeProject(item) {
+  if (!item || typeof item !== 'object') return item;
+  return {
+    ...item,
+    image: normalizeMediaUrl(item.image),
+  };
+}
 
 async function apiGet(path) {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -30,7 +47,7 @@ export async function fetchProjects({ category, limit } = {}) {
   if (limit != null) params.set('limit', String(limit));
   const qs = params.toString();
   const json = await apiGet(`/api/v1/projects${qs ? `?${qs}` : ''}`);
-  return unwrapList(json);
+  return unwrapList(json).map(normalizeProject);
 }
 
 /** Laravel JsonResource wraps a single item in `{ data: {...} }`. */
@@ -44,7 +61,18 @@ function unwrapItem(payload) {
 export async function fetchProjectBySlug(slug) {
   if (!slug) throw new Error('Missing project slug');
   const json = await apiGet(`/api/v1/projects/${encodeURIComponent(slug)}`);
-  return unwrapItem(json);
+  const project = unwrapItem(json);
+  if (!project || typeof project !== 'object') return project;
+  return {
+    ...project,
+    image: normalizeMediaUrl(project.image),
+    gallery: Array.isArray(project.gallery)
+      ? project.gallery.map((img) => ({
+          ...img,
+          src: normalizeMediaUrl(img.src),
+        }))
+      : project.gallery,
+  };
 }
 
 export function getApiBaseUrl() {

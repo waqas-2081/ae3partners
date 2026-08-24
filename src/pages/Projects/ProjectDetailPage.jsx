@@ -169,6 +169,74 @@ function usePdReveal(rootRef, depsKey) {
   }, [rootRef, depsKey]);
 }
 
+function ProjectDetailSkeleton() {
+  return (
+    <>
+      <section className="pd-showcase" aria-busy="true" aria-label="Loading project">
+        <div className="pd-showcase__inner">
+          <div className="pd-showcase__grid">
+            <figure className="pd-showcase__media">
+              <div className="pd-showcase__media-frame pd-skel pd-skel-hero" />
+            </figure>
+            <div className="pd-showcase__body">
+              <div className="pd-showcase__body-inner">
+                <div className="pd-showcase__label-row">
+                  <span className="pd-skel pd-skel-label" />
+                </div>
+                <span className="pd-skel pd-skel-heading" />
+                <span className="pd-skel pd-skel-heading pd-skel-heading--sm" />
+                <span className="pd-skel pd-skel-copy" />
+                <span className="pd-skel pd-skel-copy" />
+                <span className="pd-skel pd-skel-copy" />
+                <span className="pd-skel pd-skel-copy pd-skel-copy--short" />
+              </div>
+            </div>
+            <p className="pd-showcase__caption">
+              <span className="pd-skel pd-skel-caption" />
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="pd-specs-cards" aria-hidden="true">
+        <div className="pd-specs-cards__inner">
+          <div className="pd-specs-cards__head">
+            <span className="pd-skel pd-skel-label" style={{ margin: '0 auto 14px' }} />
+            <span className="pd-skel pd-skel-section-title" />
+            <span className="pd-skel pd-skel-copy pd-skel-copy--center" />
+          </div>
+          <div className="pd-specs-cards__grid">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <article key={i} className="pd-spec-card pd-skel-spec">
+                <span className="pd-skel pd-skel-icon" />
+                <span className="pd-skel pd-skel-spec-label" />
+                <span className="pd-skel pd-skel-spec-value" />
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="pd-gallery-full" aria-hidden="true">
+        <div className="pd-gallery-full__inner">
+          <div className="pd-gallery-full__head">
+            <div className="pd-gallery-full__head-left">
+              <span className="pd-skel pd-skel-label" />
+              <span className="pd-skel pd-skel-section-title" style={{ marginTop: 14 }} />
+            </div>
+            <span className="pd-skel pd-skel-copy" />
+          </div>
+          <div className="pd-gallery-full__grid">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="pd-gallery-full__cell pd-skel pd-skel-gallery" />
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
 export default function ProjectDetailPage() {
   const { slug } = useParams();
   const rootRef = useRef(null);
@@ -270,17 +338,14 @@ export default function ProjectDetailPage() {
       <Header />
       <MobileSideMenu />
 
-      <div id="app-wrapper" className="projects-page pd-page studio-page" ref={rootRef}>
+      <div
+        id="app-wrapper"
+        className="projects-page pd-page studio-page"
+        ref={rootRef}
+        aria-busy={loading}
+      >
         <div id="app-content" className="studio-reveal-content">
-          {loading ? (
-            <section className="pd-showcase" aria-busy="true">
-              <div className="pd-showcase__inner">
-                <p className="pd-reveal pd-is-visible" style={{ padding: '4rem 1.5rem' }}>
-                  Loading project…
-                </p>
-              </div>
-            </section>
-          ) : null}
+          {loading ? <ProjectDetailSkeleton /> : null}
 
           {!loading && error ? (
             <section className="pd-showcase">
