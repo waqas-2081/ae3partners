@@ -1,3 +1,5 @@
+import './SponsorSection.css';
+
 const P = process.env.PUBLIC_URL || '';
 
 const PARTNER_FILES = [

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './ProcessSection.css';
 
@@ -30,7 +31,114 @@ const STEPS = [
   },
 ];
 
+function ProcessCard({ step }) {
+  return (
+    <div className="process-item fade-top">
+      <div className="process-thumb">
+        <img src={step.img} alt={step.title} loading="lazy" />
+      </div>
+      <div className="process-content">
+        <h3 className="title">
+          <span>{step.n}</span>. {step.title}
+        </h3>
+        <p>{step.text}</p>
+      </div>
+      <span className="number" aria-hidden="true">
+        {step.n}
+      </span>
+    </div>
+  );
+}
+
+function useProcessMobileSwiper(carouselRef) {
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el) return undefined;
+
+    const mql = window.matchMedia('(max-width: 991px)');
+    let instance = null;
+    let retryTimer = 0;
+    let cancelled = false;
+
+    const destroy = () => {
+      if (!instance) return;
+      try {
+        instance.destroy(true, true);
+      } catch (_) {
+        /* ignore */
+      }
+      instance = null;
+    };
+
+    const init = () => {
+      if (cancelled || !mql.matches) {
+        destroy();
+        return;
+      }
+
+      if (typeof window.Swiper !== 'function') {
+        retryTimer = window.setTimeout(init, 120);
+        return;
+      }
+
+      if (instance) return;
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      instance = new window.Swiper(el, {
+        slidesPerView: 1,
+        spaceBetween: 16,
+        loop: true,
+        speed: 700,
+        grabCursor: true,
+        autoHeight: true,
+        watchOverflow: true,
+        observer: true,
+        observeParents: true,
+        autoplay: reduceMotion
+          ? false
+          : {
+              delay: 4200,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: true,
+            },
+        pagination: {
+          el: el.querySelector('.ae3-process__dots'),
+          clickable: true,
+        },
+      });
+    };
+
+    init();
+
+    const onChange = () => {
+      destroy();
+      init();
+    };
+
+    if (typeof mql.addEventListener === 'function') {
+      mql.addEventListener('change', onChange);
+    } else {
+      mql.addListener(onChange);
+    }
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(retryTimer);
+      if (typeof mql.removeEventListener === 'function') {
+        mql.removeEventListener('change', onChange);
+      } else {
+        mql.removeListener(onChange);
+      }
+      destroy();
+    };
+  }, []);
+}
+
 export default function ProcessSection() {
+  const carouselRef = useRef(null);
+  useProcessMobileSwiper(carouselRef);
+
   return (
     <section className="ae3-process process-section overflow-hidden fade-wrapper">
       <div
@@ -61,26 +169,28 @@ export default function ProcessSection() {
             </p>
           </div>
         </div>
-        <div className="row gy-xl-0 gy-4 process-wrap fade-wrapper">
-          {STEPS.map((p) => (
-            <div className="col-xl-3 col-lg-6 col-md-6" key={p.n}>
-              <div className="process-item fade-top">
-                <div className="process-thumb">
-                  <img src={p.img} alt={p.title} />
-                </div>
-                <div className="process-content">
-                  <h3 className="title">
-                    <span>{p.n}</span>. {p.title}
-                  </h3>
-                  <p>{p.text}</p>
-                </div>
-                <span className="number" aria-hidden="true">
-                  {p.n}
-                </span>
-              </div>
+
+        <div className="ae3-process__grid process-wrap fade-wrapper">
+          {STEPS.map((step) => (
+            <div className="ae3-process__grid-item" key={step.n}>
+              <ProcessCard step={step} />
             </div>
           ))}
         </div>
+
+        <div className="ae3-process__slider">
+          <div className="ae3-process__carousel swiper" ref={carouselRef}>
+            <div className="swiper-wrapper">
+              {STEPS.map((step) => (
+                <div className="swiper-slide" key={step.n}>
+                  <ProcessCard step={step} />
+                </div>
+              ))}
+            </div>
+            <div className="ae3-process__dots" />
+          </div>
+        </div>
+
         <div className="process-text">
           <h5 className="bottom-text">
             Ready to build something meaningful? <Link to="/contact">Let&apos;s start today</Link>

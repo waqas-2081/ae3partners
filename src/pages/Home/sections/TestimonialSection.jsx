@@ -30,46 +30,130 @@ const REVIEWS = [
   },
 ];
 
-export default function TestimonialSection() {
-  const carouselRef = useRef(null);
+function TestimonialPanel({ carouselRef }) {
+  return (
+    <div
+      className="testi-carousel-wrap slide-anim"
+      data-delay="0.3"
+      data-offset="100"
+      data-direction="right"
+    >
+      <div className="testi-top-content">
+        <div className="left-content">
+          <h3 className="rating">AE3</h3>
+          <div className="rating-list">
+            <ul>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <li key={i}>
+                  <i className="fa-solid fa-star" aria-hidden="true" />
+                </li>
+              ))}
+            </ul>
+            <span>Focused on You</span>
+          </div>
+        </div>
+        <div className="right-content">
+          <p>
+            We offer collaborative, ego-free, tailored service with integrated architecture and
+            construction management that keeps projects on budget and schedule.
+          </p>
+        </div>
+      </div>
+      <div className="testi-carousel swiper ae3-testi__carousel" ref={carouselRef}>
+        <div className="swiper-wrapper">
+          {REVIEWS.map((review) => (
+            <div className="swiper-slide" key={`${review.name}-${review.role}`}>
+              <div className="testi-item">
+                <p>&ldquo;{review.quote}&rdquo;</p>
+                <div className="testi-author">
+                  <div className="author-img author-img-google">
+                    <i className="fab fa-google" aria-hidden="true" title="Google" />
+                  </div>
+                  <h4 className="name">
+                    {review.name} <span>{review.role}</span>
+                  </h4>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
+function useTestimonialSwiper(carouselRef) {
   useEffect(() => {
     const el = carouselRef.current;
-    if (!el || typeof window.Swiper !== 'function') return undefined;
+    if (!el) return undefined;
 
-    if (el.swiper) {
-      try {
-        el.swiper.destroy(true, true);
-      } catch (_) {
-        // ignore
-      }
-    }
+    let instance = null;
+    let retryTimer = 0;
+    let cancelled = false;
 
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    const instance = new window.Swiper(el, {
-      slidesPerView: 1,
-      spaceBetween: 24,
-      loop: true,
-      speed: 800,
-      grabCursor: true,
-      autoplay: reduceMotion
-        ? false
-        : {
-            delay: 4500,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true,
-          },
-    });
-
-    return () => {
+    const destroy = () => {
+      if (!instance) return;
       try {
         instance.destroy(true, true);
       } catch (_) {
-        // ignore
+        /* ignore */
       }
+      instance = null;
+    };
+
+    const init = () => {
+      if (cancelled) return;
+
+      if (typeof window.Swiper !== 'function') {
+        retryTimer = window.setTimeout(init, 120);
+        return;
+      }
+
+      destroy();
+
+      const mobile = window.matchMedia('(max-width: 767px)').matches;
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      instance = new window.Swiper(el, {
+        slidesPerView: 1,
+        spaceBetween: mobile ? 0 : 24,
+        loop: !mobile,
+        speed: 800,
+        grabCursor: !mobile,
+        watchOverflow: true,
+        observer: true,
+        observeParents: true,
+        autoplay:
+          reduceMotion || mobile
+            ? false
+            : {
+                delay: 4500,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true,
+              },
+      });
+    };
+
+    const onResize = () => {
+      if (cancelled) return;
+      init();
+    };
+
+    init();
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(retryTimer);
+      window.removeEventListener('resize', onResize);
+      destroy();
     };
   }, []);
+}
+
+export default function TestimonialSection() {
+  const carouselRef = useRef(null);
+  useTestimonialSwiper(carouselRef);
 
   return (
     <section className="ae3-testi testimonial-section fade-wrapper">
@@ -90,11 +174,14 @@ export default function TestimonialSection() {
                 Why Clients Choose AE3
               </h4>
               <h2 className="section-title cursor-effect title-2">
-                Partnerships Built on Trust. <span>Proven by Performance.</span>
+                Partnerships Built on Trust.
+                <br />
+                <span>Proven by Performance.</span>
               </h2>
             </div>
           </div>
         </div>
+
         <div className="row testi-layout">
           <div className="col-lg-6">
             <div
@@ -107,53 +194,7 @@ export default function TestimonialSection() {
             </div>
           </div>
           <div className="col-lg-6">
-            <div
-              className="testi-carousel-wrap slide-anim"
-              data-delay="0.3"
-              data-offset="100"
-              data-direction="right"
-            >
-              <div className="testi-top-content">
-                <div className="left-content">
-                  <h3 className="rating">AE3</h3>
-                  <div className="rating-list">
-                    <ul>
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <li key={i}>
-                          <i className="fa-solid fa-star" aria-hidden="true"></i>
-                        </li>
-                      ))}
-                    </ul>
-                    <span>Focused on You</span>
-                  </div>
-                </div>
-                <div className="right-content">
-                  <p>
-                    We offer collaborative, ego-free, tailored service with integrated architecture
-                    and construction management that keeps projects on budget and schedule.
-                  </p>
-                </div>
-              </div>
-              <div className="testi-carousel swiper ae3-testi__carousel" ref={carouselRef}>
-                <div className="swiper-wrapper">
-                  {REVIEWS.map((review) => (
-                    <div className="swiper-slide" key={`${review.name}-${review.role}`}>
-                      <div className="testi-item">
-                        <p>“{review.quote}”</p>
-                        <div className="testi-author">
-                          <div className="author-img author-img-google">
-                            <i className="fab fa-google" aria-hidden="true" title="Google" />
-                          </div>
-                          <h4 className="name">
-                            {review.name} <span>{review.role}</span>
-                          </h4>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <TestimonialPanel carouselRef={carouselRef} />
           </div>
         </div>
       </div>

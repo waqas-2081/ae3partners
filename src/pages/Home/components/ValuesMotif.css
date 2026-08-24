@@ -167,11 +167,11 @@
   }
 }
 
-/* Mobile only */
+/* Mobile — keep Trust · Partnership · Results on one row */
 @media (max-width: 767px) {
   .ae3-values--band,
   .ae3-values--band-dark {
-    padding: 28px 6%;
+    padding: 28px var(--home-gutter, 5%);
   }
 
   .ae3-values--band::before,
@@ -181,38 +181,72 @@
     display: none;
   }
 
+  .ae3-values__inner {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(4px, 1.2vw, 10px);
+    width: 100%;
+    max-width: 100%;
+  }
+
   .ae3-values--band .ae3-values__inner,
   .ae3-values--band-dark .ae3-values__inner {
-    font-size: clamp(12px, 3.2vw, 15px);
-    letter-spacing: 0.1em;
-    gap: 0.12em 0.3em;
-    justify-content: center;
+    font-size: clamp(9px, 2.5vw, 12px);
+    letter-spacing: 0.06em;
   }
 
   .ae3-values__item {
     white-space: nowrap;
+    flex: 0 0 auto;
+    align-items: center;
+  }
+
+  .ae3-values__mark {
+    width: clamp(16px, 4.5vw, 24px);
+    height: clamp(12px, 3.4vw, 18px);
+    margin-left: 0.1em;
+  }
+
+  .ae3-values--hero {
+    margin-top: 12px;
+    margin-bottom: 12px;
   }
 
   .ae3-values--hero .ae3-values__inner {
-    letter-spacing: 0.12em;
-    font-size: 10px;
-    gap: 0.08em 0.22em;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    letter-spacing: 0.06em;
+    font-size: clamp(8px, 2.2vw, 10px);
+    gap: clamp(4px, 1vw, 8px);
   }
 
   .ae3-values--footer .ae3-values__inner {
-    letter-spacing: 0.12em;
-    font-size: 10px;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    letter-spacing: 0.06em;
+    font-size: clamp(8px, 2.2vw, 10px);
+    gap: clamp(4px, 1vw, 8px);
   }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 380px) {
   .ae3-values--band .ae3-values__inner,
-  .ae3-values--band-dark .ae3-values__inner {
-    flex-direction: column;
-    align-items: center;
-    gap: 0.3em;
-    letter-spacing: 0.16em;
-    font-size: 12px;
+  .ae3-values--band-dark .ae3-values__inner,
+  .ae3-values--hero .ae3-values__inner,
+  .ae3-values--footer .ae3-values__inner {
+    font-size: 8px;
+    letter-spacing: 0.04em;
+    gap: 3px;
+  }
+
+  .ae3-values__mark {
+    width: 14px;
+    height: 10px;
+    margin-left: 0.06em;
   }
 }
 

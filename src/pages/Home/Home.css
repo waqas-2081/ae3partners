@@ -29,22 +29,24 @@
   padding-right: var(--home-gutter);
 }
 
-/* Hero content / frame lines match gutter */
-.home-page .ae3h__content {
-  left: var(--home-gutter) !important;
-}
+/* Hero content / frame lines match gutter (desktop) */
+@media (min-width: 992px) {
+  .home-page .ae3h__content {
+    left: var(--home-gutter) !important;
+  }
 
-.home-page .ae3h__line--l {
-  left: var(--home-gutter) !important;
-}
+  .home-page .ae3h__line--l {
+    left: var(--home-gutter) !important;
+  }
 
-.home-page .ae3h__line--r {
-  right: var(--home-gutter) !important;
-}
+  .home-page .ae3h__line--r {
+    right: var(--home-gutter) !important;
+  }
 
-.home-page .ae3h__line--h {
-  left: var(--home-gutter) !important;
-  right: var(--home-gutter) !important;
+  .home-page .ae3h__line--h {
+    left: var(--home-gutter) !important;
+    right: var(--home-gutter) !important;
+  }
 }
 
 /* Header on home uses the same gutter */

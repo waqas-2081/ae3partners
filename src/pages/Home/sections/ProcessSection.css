@@ -54,9 +54,80 @@
   text-decoration: underline;
 }
 
+/* Desktop grid */
+.ae3-process__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(16px, 2vw, 24px);
+  width: 100%;
+  max-width: 100%;
+}
+
+.ae3-process__grid-item {
+  min-width: 0;
+  width: 100%;
+}
+
+/* Mobile slider — hidden on desktop */
+.ae3-process__slider {
+  display: none;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ae3-process__carousel {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.ae3-process__carousel .swiper-slide {
+  width: 100% !important;
+  height: auto;
+  box-sizing: border-box;
+}
+
+.ae3-process__dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.ae3-process__dots .swiper-pagination-bullet {
+  width: 8px;
+  height: 8px;
+  margin: 0 !important;
+  background: rgba(13, 21, 32, 0.22);
+  opacity: 1;
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+
+.ae3-process__dots .swiper-pagination-bullet-active {
+  background: var(--secondary, #d05727);
+  transform: scale(1.15);
+}
+
+@media (max-width: 1199px) {
+  .ae3-process__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 991px) {
   .ae3-process.process-section {
     padding: 48px 0 56px;
+  }
+
+  .ae3-process__grid {
+    display: none;
+  }
+
+  .ae3-process__slider {
+    display: block;
   }
 
   .ae3-process .heading-space {
@@ -76,10 +147,6 @@
     max-width: 100%;
     font-size: clamp(28px, 5.5vw, 40px);
     line-height: 1.15;
-  }
-
-  .ae3-process .process-wrap > div:nth-child(n) {
-    margin-top: 0 !important;
   }
 }
 
@@ -110,17 +177,6 @@
   .ae3-process .process-desc p {
     font-size: 14px;
     line-height: 1.6;
-  }
-
-  .ae3-process .process-wrap {
-    --bs-gutter-x: 0;
-    --bs-gutter-y: 16px;
-  }
-
-  .ae3-process .process-wrap > [class*='col-'] {
-    width: 100%;
-    max-width: 100%;
-    flex: 0 0 100%;
   }
 
   .ae3-process .process-item .process-thumb {

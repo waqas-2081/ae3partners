@@ -1,0 +1,45 @@
+/* Sponsor strip — mobile overflow fix */
+
+.home-page .sponsor-section .container {
+  width: 100%;
+  max-width: 100%;
+  padding-left: var(--home-gutter, 5%) !important;
+  padding-right: var(--home-gutter, 5%) !important;
+  box-sizing: border-box;
+}
+
+.home-page .sponsor-text-wrap {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: clamp(32px, 8vw, 70px);
+  padding: 0 4px;
+  box-sizing: border-box;
+}
+
+.home-page .sponsor-text-wrap .sponsor-text {
+  font-size: clamp(15px, 4.2vw, 20px);
+  line-height: 1.45;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  padding: 0 12px;
+}
+
+.home-page .sponsor-carousel {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  .home-page .sponsor-section {
+    padding-top: 48px !important;
+    padding-bottom: 32px !important;
+  }
+
+  .home-page .sponsor-text-wrap:before {
+    left: 5%;
+    right: 5%;
+    width: auto;
+  }
+}

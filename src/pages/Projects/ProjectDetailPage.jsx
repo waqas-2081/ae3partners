@@ -1,12 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ensureTemplateScriptsLoaded } from '../../template/loadTemplateScripts';
 import Header from '../Home/components/Header';
 import MobileSideMenu from '../Home/components/MobileSideMenu';
 import SiteFooter from '../../components/SiteFooter/SiteFooter';
-import GallerySection from '../Home/sections/GallerySection';
-import ScrollPercentage from '../Home/components/ScrollPercentage';
 import { fetchProjectBySlug } from '../../api/projectsApi';
+import { ensureTemplateScriptsLoaded } from '../../template/loadTemplateScripts';
 import './ProjectsPage.css';
 import './ProjectDetailPage.css';
 
@@ -71,6 +69,145 @@ function SpecIcon({ id }) {
   };
 
   return icons[id] ?? icons.sector;
+}
+
+function SpecCard({ spec, index }) {
+  return (
+    <article className={`pd-spec-card pd-spec-card--${spec.id}`}>
+      <span className="pd-spec-card__index" aria-hidden="true">
+        {String(index + 1).padStart(2, '0')}
+      </span>
+      <span className="pd-spec-card__icon" aria-hidden="true">
+        <SpecIcon id={spec.id} />
+      </span>
+      <p className="pd-spec-card__label">{spec.label}</p>
+      {spec.related ? (
+        <ul className="pd-spec-card__list">
+          {spec.related.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="pd-spec-card__value">
+          {spec.live ? (
+            <>
+              <span className="pd-spec-card__live" aria-hidden="true" />
+              {spec.value}
+            </>
+          ) : (
+            spec.value
+          )}
+        </p>
+      )}
+    </article>
+  );
+}
+
+function GalleryCell({ item, index, onOpen }) {
+  return (
+    <button
+      type="button"
+      className="pd-gallery-full__cell"
+      onClick={() => onOpen(index)}
+      aria-label={`Open ${item.caption} in gallery`}
+    >
+      <img src={item.src} alt={item.caption} loading="lazy" decoding="async" />
+      <span className="pd-gallery-full__cell-overlay" aria-hidden="true" />
+      <span className="pd-gallery-full__cell-caption">{item.caption}</span>
+      <span className="pd-gallery-full__cell-zoom" aria-hidden="true">
+        +
+      </span>
+    </button>
+  );
+}
+
+function usePdMobileSwiper(carouselRef, { enabled, slidesPerView = 1.15, spaceBetween = 14, loop = true }) {
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el || !enabled) return undefined;
+
+    const mql = window.matchMedia('(max-width: 767px)');
+    let instance = null;
+    let retryTimer = 0;
+    let cancelled = false;
+
+    const destroy = () => {
+      if (!instance) return;
+      try {
+        instance.destroy(true, true);
+      } catch (_) {
+        /* ignore */
+      }
+      instance = null;
+    };
+
+    const init = () => {
+      if (cancelled || !mql.matches) {
+        destroy();
+        return;
+      }
+      if (typeof window.Swiper !== 'function') {
+        retryTimer = window.setTimeout(init, 120);
+        return;
+      }
+
+      destroy();
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const slideCount = el.querySelectorAll('.swiper-slide').length;
+
+      instance = new window.Swiper(el, {
+        slidesPerView,
+        spaceBetween,
+        centeredSlides: false,
+        loop: loop && slideCount > 2,
+        speed: 650,
+        grabCursor: true,
+        watchOverflow: true,
+        observer: true,
+        observeParents: true,
+        autoplay: reduceMotion
+          ? false
+          : {
+              delay: 3800,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: true,
+            },
+        pagination: {
+          el: el.querySelector('.pd-mobile-dots'),
+          clickable: true,
+        },
+      });
+    };
+
+    ensureTemplateScriptsLoaded()
+      .then(() => {
+        if (!cancelled) init();
+      })
+      .catch(() => {});
+
+    const onChange = () => {
+      destroy();
+      init();
+    };
+
+    if (typeof mql.addEventListener === 'function') {
+      mql.addEventListener('change', onChange);
+    } else {
+      mql.addListener(onChange);
+    }
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(retryTimer);
+      if (typeof mql.removeEventListener === 'function') {
+        mql.removeEventListener('change', onChange);
+      } else {
+        mql.removeListener(onChange);
+      }
+      destroy();
+    };
+  }, [carouselRef, enabled, slidesPerView, spaceBetween, loop]);
 }
 
 function buildSpecs(project) {
@@ -144,31 +281,6 @@ function DescriptionBody({ html, fallback }) {
   return null;
 }
 
-function usePdReveal(rootRef, depsKey) {
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return undefined;
-    const els = root.querySelectorAll('.pd-reveal');
-    if (!els.length) return undefined;
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((en) => {
-          if (en.isIntersecting) {
-            en.target.classList.add('pd-is-visible');
-            io.unobserve(en.target);
-          }
-        });
-      },
-      { threshold: 0.08, rootMargin: '0px 0px -32px 0px' }
-    );
-    els.forEach((el) => {
-      el.classList.remove('pd-is-visible');
-      io.observe(el);
-    });
-    return () => io.disconnect();
-  }, [rootRef, depsKey]);
-}
-
 function ProjectDetailSkeleton() {
   return (
     <>
@@ -237,13 +349,49 @@ function ProjectDetailSkeleton() {
   );
 }
 
+const LazyGallerySection = lazy(() => import('../Home/sections/GallerySection'));
+
+const DeferredGallerySection = memo(function DeferredGallerySection() {
+  const sentinelRef = useRef(null);
+  const [showGallery, setShowGallery] = useState(false);
+
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node) return undefined;
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShowGallery(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: '120px 0px' }
+    );
+
+    io.observe(node);
+    return () => io.disconnect();
+  }, []);
+
+  if (!showGallery) {
+    return <div ref={sentinelRef} className="pp-gallery-sentinel" aria-hidden="true" />;
+  }
+
+  return (
+    <Suspense fallback={null}>
+      <LazyGallerySection />
+    </Suspense>
+  );
+});
+
 export default function ProjectDetailPage() {
   const { slug } = useParams();
-  const rootRef = useRef(null);
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const specsSwiperRef = useRef(null);
+  const gallerySwiperRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -282,6 +430,20 @@ export default function ProjectDetailPage() {
     project?.specs?.role,
   ].filter(Boolean);
 
+  usePdMobileSwiper(specsSwiperRef, {
+    enabled: !loading && !error && projectSpecs.length > 0,
+    slidesPerView: 1,
+    spaceBetween: 14,
+    loop: true,
+  });
+
+  usePdMobileSwiper(gallerySwiperRef, {
+    enabled: !loading && !error && galleryImages.length > 0,
+    slidesPerView: 1,
+    spaceBetween: 12,
+    loop: true,
+  });
+
   const closeLightbox = useCallback(() => setLightboxIndex(null), []);
   const goLightboxPrev = useCallback(() => {
     setLightboxIndex((i) => {
@@ -312,12 +474,6 @@ export default function ProjectDetailPage() {
   }, [slug]);
 
   useEffect(() => {
-    ensureTemplateScriptsLoaded().catch(() => {});
-  }, []);
-
-  usePdReveal(rootRef, project?.id || slug || 'empty');
-
-  useEffect(() => {
     if (lightboxIndex === null) return undefined;
     const onKey = (e) => {
       if (e.key === 'Escape') closeLightbox();
@@ -340,8 +496,7 @@ export default function ProjectDetailPage() {
 
       <div
         id="app-wrapper"
-        className="projects-page pd-page studio-page"
-        ref={rootRef}
+        className="projects-page pd-page pd-performance studio-page"
         aria-busy={loading}
       >
         <div id="app-content" className="studio-reveal-content">
@@ -374,6 +529,7 @@ export default function ProjectDetailPage() {
                             src={heroImage}
                             alt={project.title || 'Project'}
                             loading="eager"
+                            decoding="async"
                           />
                         ) : (
                           <div
@@ -432,38 +588,27 @@ export default function ProjectDetailPage() {
 
                     <div className="pd-specs-cards__grid">
                       {projectSpecs.map((spec, i) => (
-                        <article
+                        <div
                           key={spec.id}
-                          className={`pd-spec-card pd-spec-card--${spec.id} pd-reveal`}
+                          className="pd-reveal"
                           style={{ '--pd-i': i }}
                         >
-                          <span className="pd-spec-card__index" aria-hidden="true">
-                            {String(i + 1).padStart(2, '0')}
-                          </span>
-                          <span className="pd-spec-card__icon" aria-hidden="true">
-                            <SpecIcon id={spec.id} />
-                          </span>
-                          <p className="pd-spec-card__label">{spec.label}</p>
-                          {spec.related ? (
-                            <ul className="pd-spec-card__list">
-                              {spec.related.map((item) => (
-                                <li key={item}>{item}</li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="pd-spec-card__value">
-                              {spec.live ? (
-                                <>
-                                  <span className="pd-spec-card__live" aria-hidden="true" />
-                                  {spec.value}
-                                </>
-                              ) : (
-                                spec.value
-                              )}
-                            </p>
-                          )}
-                        </article>
+                          <SpecCard spec={spec} index={i} />
+                        </div>
                       ))}
+                    </div>
+
+                    <div className="pd-specs-cards__slider">
+                      <div className="pd-specs-cards__carousel swiper" ref={specsSwiperRef}>
+                        <div className="swiper-wrapper">
+                          {projectSpecs.map((spec, i) => (
+                            <div className="swiper-slide" key={spec.id}>
+                              <SpecCard spec={spec} index={i} />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="pd-mobile-dots" />
+                      </div>
                     </div>
                   </div>
                 </section>
@@ -490,22 +635,30 @@ export default function ProjectDetailPage() {
 
                     <div className="pd-gallery-full__grid">
                       {galleryImages.map((item, i) => (
-                        <button
+                        <div
                           key={(item.id != null ? String(item.id) : item.src) + String(i)}
-                          type="button"
-                          className="pd-gallery-full__cell pd-reveal"
+                          className="pd-reveal"
                           style={{ '--pd-i': i }}
-                          onClick={() => setLightboxIndex(i)}
-                          aria-label={`Open ${item.caption} in gallery`}
                         >
-                          <img src={item.src} alt={item.caption} loading="lazy" />
-                          <span className="pd-gallery-full__cell-overlay" aria-hidden="true" />
-                          <span className="pd-gallery-full__cell-caption">{item.caption}</span>
-                          <span className="pd-gallery-full__cell-zoom" aria-hidden="true">
-                            +
-                          </span>
-                        </button>
+                          <GalleryCell item={item} index={i} onOpen={setLightboxIndex} />
+                        </div>
                       ))}
+                    </div>
+
+                    <div className="pd-gallery-full__slider">
+                      <div className="pd-gallery-full__carousel swiper" ref={gallerySwiperRef}>
+                        <div className="swiper-wrapper">
+                          {galleryImages.map((item, i) => (
+                            <div
+                              className="swiper-slide"
+                              key={`m-${item.id != null ? String(item.id) : item.src}-${i}`}
+                            >
+                              <GalleryCell item={item} index={i} onOpen={setLightboxIndex} />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="pd-mobile-dots" />
+                      </div>
                     </div>
                   </div>
                 </section>
@@ -587,7 +740,7 @@ export default function ProjectDetailPage() {
               </form>
             </div>
           </section>
-          <GallerySection />
+          <DeferredGallerySection />
         </div>
 
         <SiteFooter />
@@ -628,8 +781,6 @@ export default function ProjectDetailPage() {
           </p>
         </div>
       ) : null}
-
-      <ScrollPercentage />
     </>
   );
 }
