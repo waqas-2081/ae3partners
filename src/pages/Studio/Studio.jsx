@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Header from '../Home/components/Header';
 import MobileSideMenu from '../Home/components/MobileSideMenu';
 import SiteFooter from '../../components/SiteFooter/SiteFooter';
 import GallerySection from '../Home/sections/GallerySection';
+import { ensureTemplateScriptsLoaded } from '../../template/loadTemplateScripts';
 import './Studio.css';
 
 const P = process.env.PUBLIC_URL || '';
@@ -178,8 +179,8 @@ const MISSION_SLIDES = [
     n: '01',
     title: 'Our Mission At AE3 Partners',
     body:
-      "Our mission at AE3 Partners is to empower communities through innovative design and to bring our clients' visions to life through expert knowledge.",
-    image: `${P}/assets/newimages/featured-projects/liberation-park.png`,
+      "Our mission is to strengthen communities through thoughtful, innovative design, transforming our clients’ visions into meaningful, enduring places through expertise, collaboration, and trusted partnership.",
+    image: `${P}/assets/newimages/mission/mission.png`,
     theme: 'navy',
   },
   {
@@ -187,8 +188,8 @@ const MISSION_SLIDES = [
     n: '02',
     title: "Designing What's Next For Communities",
     body:
-      'We envision thoughtfully planned spaces that strengthen communities — combining architecture, planning, and construction management to deliver projects built to last.',
-    image: `${P}/assets/newimages/vision.png`,
+      'We envision thoughtfully planned spaces that strengthen communities combining architecture, planning, and construction management to deliver projects built to last.',
+    image: `${P}/assets/newimages/mission/vision.png`,
     theme: 'orange',
   },
 ];
@@ -196,137 +197,192 @@ const MISSION_SLIDES = [
 const TEAM_IMG = `${P}/assets/newimages/team`;
 
 const KEY_TEAM_MEMBERS = [
-  { name: 'Rick Dumas', title: 'Principal', image: `${TEAM_IMG}/rick-dumas.jpg` },
-  { name: 'Doug Davis', title: 'Principal', image: `${TEAM_IMG}/doug-davis.jpg` },
-  { name: 'Elizabeth Andrews', title: 'Operations Manager', image: `${TEAM_IMG}/elizabeth-andrews.jpg` },
-  { name: 'Lisa Arias', title: 'Sr. Marketing Manager', image: `${TEAM_IMG}/lisa-arias.jpg` },
-  { name: 'Dong-Mei Bien', title: 'Accountant', image: `${TEAM_IMG}/dong-mei-bien.jpg` },
-  { name: 'Willy Deng', title: 'IT Manager', image: `${TEAM_IMG}/willy-deng.jpg` },
-  { name: 'Brandon Doherty', title: 'Associate Project Manager', image: `${TEAM_IMG}/brandon-doherty.jpg` },
-  { name: 'Anna Dunnigan', title: 'Sr. Project Architect / Manager', image: `${TEAM_IMG}/anna-dunnigan.jpg` },
-  { name: 'Antonio Escobedo', title: 'Job Captain', image: `${TEAM_IMG}/antonio-escobedo.jpg` },
-  { name: 'David Hughes', title: 'Construction Manager / Inspector', image: `${TEAM_IMG}/david-hughes.jpg` },
-  { name: 'Benjamin Loggins', title: 'Sr. QA/QC Manager', image: `${TEAM_IMG}/benjamin-loggins.jpg` },
-  { name: 'Antoinette Nascimento', title: 'Sr. Project Architect / CM', image: `${TEAM_IMG}/antoinette-nascimento.jpg` },
-  { name: 'Troy Newell', title: 'Associate Project Manager', image: `${TEAM_IMG}/troy-newell.jpg` },
-  { name: 'Denise Nolden', title: 'Sr. Educational Lead', image: `${TEAM_IMG}/denise-nolden.jpg` },
-  { name: 'Deborah Peters', title: 'Job Captain', image: `${TEAM_IMG}/deborah-peters.jpg` },
-  { name: 'Ann Prometheus', title: 'Associate Project Manager', image: `${TEAM_IMG}/ann-prometheus.jpg` },
-  { name: 'Anika Scott', title: 'Project Manager', image: `${TEAM_IMG}/anika-scott.jpg` },
-  { name: 'Diana Uriostegui', title: 'Job Captain', image: `${TEAM_IMG}/diana-uriostegui.jpg` },
-  { name: 'Marta Wojcik', title: 'Job Captain', image: `${TEAM_IMG}/marta-wojcik.jpg` },
-  { name: 'Michael Wilson', title: 'Sr. Project Manager', image: `${TEAM_IMG}/michael-wilson.jpg` },
-  { name: 'Quintus Colbert', title: 'Job Captain', image: `${TEAM_IMG}/quintus-colbert.png` },
+  { name: 'Ann', title: 'Principal', image: `${TEAM_IMG}/ann.png` },
+  { name: 'anna', title: 'Principal', image: `${TEAM_IMG}/anna.png` },
+  { name: 'doug', title: 'Operations Manager', image: `${TEAM_IMG}/doug.png` },
+  { name: 'Lisa', title: 'Sr. Marketing Manager', image: `${TEAM_IMG}/lisa.png` },
+  { name: 'Liz', title: 'Accountant', image: `${TEAM_IMG}/liz.png` },
+  { name: 'Rick', title: 'IT Manager', image: `${TEAM_IMG}/rick.png` },
+  { name: 'Troy', title: 'Associate Project Manager', image: `${TEAM_IMG}/troy.png` },
+ 
 ];
 
-const MAP_LOCATIONS = [
+const JOB_OPENINGS = [
   {
-    id: 'sf',
-    name: 'San Francisco',
-    top: '25%',
-    left: '45%',
-    icon: 'tower',
-    cardTitle: 'San Francisco Office',
-    cardBody:
-      '505 Montgomery St., 10th Floor - our Bay Area home base for architecture, planning, and construction management across California.',
-    image: `${P}/assets/newimages/gallery-ribbon/sfo-sky-terrace.png`,
-    cardPos: 'right',
+    id: 'senior-pm',
+    title: 'Senior Project Manager',
+    summary:
+      'Results-oriented Senior Project Manager, Revit capable, with 5+ years managing projects of $20M+ construction value.',
+    applyEmail: 'ae3@ae3partners.com',
+    body: [
+      'AE3 is seeking a results-oriented Senior Project Manager, who is Revit capable, and has a minimum of 5 years of experience managing projects with a construction value of $20 million or more. This person will lead the direct day-to-day management of projects, design, and production, and reports directly to the Principals.',
+      'The candidate must demonstrate excellent communication and interpersonal skills with clients and their representatives, provide internal & external team management, and have excellent time management skills. This candidate must also demonstrate ability to interpret direction from our clients and principals, and translate it into the appropriate actions to ensure client satisfaction and to ensure projects are on track, both with budget and schedule.',
+      'The ideal candidate is technically proficient and must have a minimum of five years’ experience working directly in Revit. If you are interested in a dynamic work environment that is collaborative and team-oriented, then we are looking for you! We offer the opportunity to work on a variety of project types and sizes, as well as an opportunity for professional development and growth, as we are growing fast.',
+    ],
   },
   {
-    id: 'oak',
-    name: 'Oakland',
-    top: '40%',
-    left: '16%',
-    icon: 'bridge',
-    cardTitle: 'Oakland Office',
-    cardBody:
-      '11 Embarcadero West, Suite 205 - serving the East Bay with thoughtful design and delivery across civic, aviation, and community projects.',
-    image: `${P}/assets/newimages/gallery-ribbon/oak-arrivals-exterior.png`,
-    cardPos: 'right',
+    id: 'revit-designer',
+    title: 'Revit Designer',
+    summary:
+      'Designer with 5+ years at an architectural firm and strong Revit project experience in a collaborative studio environment.',
+    applyEmail: 'ae3@ae3partners.com',
+    body: [
+      'AE3 is seeking a Designer with 5+ years of experience working at an architectural firm. The ideal candidate is technically proficient and has a minimum of five years actual project experience with Revit. If you are interested in a dynamic work environment that is collaborative and team-oriented, then we are looking for you.',
+      'We offer the opportunity to work on a variety of project types and sizes, as well as an opportunity for professional development and growth.',
+    ],
+    bullets: [
+      'Work closely with the Project Manager and other team members on schematic design, space planning, design development, and construction documentation.',
+      'Participate in programming and planning, and the selection of finishes, materials, furniture systems, and specifications.',
+      'Utilize visualization, graphics, and presentation skills to effectively communicate the project design.',
+      'Provide design support and documentation throughout the design phases of the project.',
+      'Provide production assistance for construction documents required for permit and construction.',
+      'Assist in aspects of project coordination with the team and contractors during construction administration.',
+    ],
   },
   {
-    id: 'la',
-    name: 'Los Angeles',
-    top: '64%',
-    left: '35%',
-    icon: 'palms',
-    cardTitle: 'Los Angeles Office',
-    cardBody:
-      '527 West 7th St., Suite 700 - supporting Southern California clients with design leadership and hands-on project delivery.',
-    image: `${P}/assets/newimages/gallery-ribbon/lax-cta-west-corridor.png`,
-    cardPos: 'up',
-  },
-  {
-    id: 'dc',
-    name: 'Washington, D.C.',
-    top: '36%',
-    left: '78%',
-    icon: 'capitol',
-    cardTitle: 'Washington, D.C. Office',
-    cardBody:
-      '1629 K Street, Suite 300 - supporting federal and East Coast clients with architecture and construction management expertise.',
-    image: `${P}/assets/newimages/gallery-ribbon/college-of-alameda-aviation.png`,
-    cardPos: 'left',
+    id: 'associate-pm',
+    title: 'Associate Project Manager',
+    summary:
+      'Bachelor’s degree plus two years as Job Captain (or similar). Revit proficiency required. From $89,000/year with full benefits.',
+    applyEmail: 'liza@ae3partners.com',
+    body: [
+      'Position Duties include project planning and coordination, documentation and reporting, budget and resource management, quality control and compliance, client and stakeholder engagement, and risk management.',
+      'Requires a Bachelor’s Degree in Architecture, Construction Management, or related field. Two (2) years experience as a Job Captain (or similar entry level Architect without licensure).',
+      'Demonstrated experience in Type I, II, and V construction and low- to mid-rise building types; building systems, constructability, detailing, and accurate documentation; and Revit (test will be administered) with a proven track record managing production for both Revit- and AutoCAD-based projects.',
+      'Rate of Pay: From $89,000 per year. Compensation may vary based on qualifications, skills, competencies, experience, and location.',
+      'Benefits include medical, vision and dental coverage, group and supplemental life insurance, 401K, paid time off (PTO), fitness and educational stipends.',
+      'Employer / Work Location: AE3 Partners, 505 Montgomery Street, 10th Floor, San Francisco, CA 94111.',
+    ],
+    bullets: [
+      'Assist in project schedules, timelines, and team coordination across architects, engineers, and consultants.',
+      'Prepare meeting minutes, reports, presentations, proposals, and project status updates.',
+      'Support budgets, expenses, procurement, and vendor coordination.',
+      'Help ensure quality standards, reviews, inspections, and regulatory compliance.',
+      'Serve as a client point of contact and support meetings and presentations.',
+      'Identify risks, support mitigation strategies, and help resolve project issues.',
+    ],
   },
 ];
 
-function MapPinIcon({ type }) {
-  if (type === 'palms') {
-    return (
-      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-        <path
-          fill="currentColor"
-          d="M16 3.5c-1.2 3-3.6 5-6.6 5.6 1.7.5 3.2 1.6 4.2 3.1-1.7-.7-3.6-1-5.5-.8 1.9 1.2 3.3 3.1 3.8 5.3-1.5-1.1-3.2-1.6-5-1.7 2.3 1.3 4 3.5 4.6 6.1-.3-1.6 0-3.2.9-4.6.3 2.2 1.1 4.3 2.5 6.1.6-2.3 1.8-4.4 3.5-6"
-        />
-        <path
-          fill="currentColor"
-          d="M16 3.5c1.2 3 3.6 5 6.6 5.6-1.7.5-3.2 1.6-4.2 3.1 1.7-.7 3.6-1 5.5-.8-1.9 1.2-3.3 3.1-3.8 5.3 1.5-1.1 3.2-1.6 5-1.7-2.3 1.3-4 3.5-4.6 6.1.3-1.6 0-3.2-.9-4.6-.3 2.2-1.1 4.3-2.5 6.1-.6-2.3-1.8-4.4-3.5-6"
-        />
-        <path fill="currentColor" d="M15 16.5h2V28h-2z" />
-        <path fill="currentColor" d="M10.8 18.5h1.5V28h-1.5z" />
-        <path fill="currentColor" d="M19.7 18.5h1.5V28h-1.5z" />
-      </svg>
-    );
-  }
-  if (type === 'bridge') {
-    return (
-      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-        <path
-          fill="currentColor"
-          d="M3 21.5h26v2.4H3zm1.2-7.2 1.8-.9 1.3 7H5.7l-1.5-6.1zm23.6 0-1.8-.9-1.3 7h1.6l1.5-6.1z"
-        />
-        <path
-          fill="currentColor"
-          d="M7 11.8c3-3.6 6.1-5.6 9-5.6s6 2 9 5.6l-1.6 1.2c-2.4-2.9-5-4.4-7.4-4.4s-5 1.5-7.4 4.4L7 11.8z"
-        />
-        <path fill="currentColor" d="M15 6.5h2v13h-2zM9 13h1.7v6.5H9zm12.3 0H23v6.5h-1.7z" />
-        <path fill="currentColor" d="M6.2 19.8h19.6v1.5H6.2zM4.8 24h2.4v3.2H4.8zm9.8 0h2.4v3.2h-2.4zm9.8 0h2.4v3.2h-2.4z" />
-      </svg>
-    );
-  }
-  if (type === 'capitol') {
-    return (
-      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-        <path
-          fill="currentColor"
-          d="M15.2 3.2h1.6l.8 4.2h-3.2l.8-4.2zM14 8.2h4v1.6h-4z"
-        />
-        <path
-          fill="currentColor"
-          d="M8.5 11.2h15l1.2 2.2H7.3l1.2-2.2zM9.2 14.2h2.2v8.2H9.2zm5.7 0h2.2v8.2h-2.2zm5.7 0H22.8v8.2h-2.2z"
-        />
-        <path fill="currentColor" d="M6.5 23.2h19v2.2h-19zM5 26.2h22v2.4H5z" />
-        <path fill="currentColor" d="M15.1 9.8h1.8v1.4h-1.8z" />
-      </svg>
-    );
-  }
+const TEAM_DOT_COUNT = 5;
+
+function TeamMemberCard({ member }) {
   return (
-    <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <path fill="currentColor" d="M16 2.5 20.2 22h-8.4L16 2.5zm0 5.5L13.6 20h4.8L16 8z" />
-      <path fill="currentColor" d="M14.6 22h2.8v6.5h-2.8z" />
-      <path fill="currentColor" d="M10.8 26.5h10.4V29H10.8z" />
-    </svg>
+    <div className="studio-team__card">
+      <div className="studio-team__photo">
+        <img src={member.image} alt={member.name} loading="lazy" decoding="async" />
+      </div>
+      <h3 className="studio-team__name">{member.name}</h3>
+      <p className="studio-team__role">{member.title}</p>
+    </div>
   );
+}
+
+function useTeamSwiper(carouselRef, onIndexChange) {
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el) return undefined;
+
+    let instance = null;
+    let retryTimer = 0;
+    let cancelled = false;
+
+    const destroy = () => {
+      if (!instance) return;
+      try {
+        instance.destroy(true, true);
+      } catch (_) {
+        /* ignore */
+      }
+      instance = null;
+    };
+
+    const reportIndex = (swiper) => {
+      if (!onIndexChange) return;
+      const total = KEY_TEAM_MEMBERS.length;
+      const real = typeof swiper.realIndex === 'number' ? swiper.realIndex : swiper.activeIndex || 0;
+      const dot =
+        total <= 1
+          ? 0
+          : Math.min(TEAM_DOT_COUNT - 1, Math.round((real / (total - 1)) * (TEAM_DOT_COUNT - 1)));
+      onIndexChange(dot, real, swiper);
+    };
+
+    const init = () => {
+      if (cancelled) return;
+      if (typeof window.Swiper !== 'function') {
+        retryTimer = window.setTimeout(init, 120);
+        return;
+      }
+
+      destroy();
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      instance = new window.Swiper(el, {
+        slidesPerView: 1,
+        spaceBetween: 16,
+        loop: KEY_TEAM_MEMBERS.length > 2,
+        speed: 550,
+        grabCursor: true,
+        watchOverflow: true,
+        observer: true,
+        observeParents: true,
+        autoplay: reduceMotion
+          ? false
+          : {
+              delay: 2000,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: true,
+            },
+        breakpoints: {
+          576: {
+            slidesPerView: 2,
+            spaceBetween: 18,
+          },
+          768: {
+            slidesPerView: 3,
+            spaceBetween: 22,
+          },
+          1100: {
+            slidesPerView: 4,
+            spaceBetween: 28,
+          },
+        },
+        on: {
+          init: reportIndex,
+          slideChange: reportIndex,
+        },
+      });
+
+      // expose for dot clicks
+      el._ae3TeamSwiper = instance;
+    };
+
+    ensureTemplateScriptsLoaded()
+      .then(() => {
+        if (!cancelled) init();
+      })
+      .catch(() => {});
+
+    const onResize = () => {
+      if (cancelled || !instance) return;
+      try {
+        instance.update();
+      } catch (_) {
+        /* ignore */
+      }
+    };
+
+    window.addEventListener('resize', onResize);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(retryTimer);
+      window.removeEventListener('resize', onResize);
+      if (el) delete el._ae3TeamSwiper;
+      destroy();
+    };
+  }, [carouselRef, onIndexChange]);
 }
 
 export default function Studio() {
@@ -334,8 +390,32 @@ export default function Studio() {
   const hslideRef = useRef(null);
   const hslideTrackRef = useRef(null);
   const teamCtaTextRef = useRef(null);
+  const teamSwiperRef = useRef(null);
   const [openWhy, setOpenWhy] = useState('');
-  const [activeMapPin, setActiveMapPin] = useState(null);
+  const [openCareer, setOpenCareer] = useState('senior-pm');
+  const [teamDot, setTeamDot] = useState(0);
+  const teamSwiperInstanceRef = useRef(null);
+
+  const onTeamIndexChange = useCallback((dot, _real, swiper) => {
+    setTeamDot(dot);
+    teamSwiperInstanceRef.current = swiper;
+  }, []);
+
+  useTeamSwiper(teamSwiperRef, onTeamIndexChange);
+
+  const goTeamDot = useCallback((dotIndex) => {
+    const swiper = teamSwiperInstanceRef.current || teamSwiperRef.current?._ae3TeamSwiper;
+    if (!swiper) return;
+    const total = KEY_TEAM_MEMBERS.length;
+    const slideIndex =
+      total <= 1 ? 0 : Math.round((dotIndex / (TEAM_DOT_COUNT - 1)) * (total - 1));
+    try {
+      if (swiper.params.loop) swiper.slideToLoop(slideIndex);
+      else swiper.slideTo(slideIndex);
+    } catch (_) {
+      swiper.slideTo(slideIndex);
+    }
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -446,6 +526,10 @@ export default function Studio() {
     setOpenWhy((current) => (current === n ? '' : n));
   };
 
+  const toggleCareer = (id) => {
+    setOpenCareer((current) => (current === id ? '' : id));
+  };
+
   return (
     <>
       <Header />
@@ -459,9 +543,7 @@ export default function Studio() {
               <h2 className="studio-intro__heading studio-intro__heading--hero">
                 We love what we do.
               </h2>
-              <p className="studio-intro__lead">
-                Join Our Team And Design Your Career With AE3.
-              </p>
+             
               <p className="studio-intro__tagline">
                 AE3 Partners is a full-service architecture, planning, and construction management
                 firm based in San Francisco, providing services throughout California.
@@ -559,50 +641,49 @@ export default function Studio() {
                     alt="United States map showing AE3 Partners office locations"
                     loading="lazy"
                   />
-
-                  {MAP_LOCATIONS.map((loc) => {
-                    const isActive = activeMapPin === loc.id;
-                    return (
-                      <div
-                        key={loc.id}
-                        className={`studio-map__pin studio-map__pin--${loc.cardPos}${isActive ? ' is-active' : ''}`}
-                        style={{ top: loc.top, left: loc.left }}
-                        onMouseEnter={() => setActiveMapPin(loc.id)}
-                        onMouseLeave={() => setActiveMapPin(null)}
-                        onFocus={() => setActiveMapPin(loc.id)}
-                        onBlur={() => setActiveMapPin(null)}
-                      >
-                        <button
-                          type="button"
-                          className="studio-map__marker"
-                          aria-expanded={isActive}
-                          aria-label={`${loc.name} office`}
-                          onClick={() =>
-                            setActiveMapPin((current) =>
-                              current === loc.id ? null : loc.id
-                            )
-                          }
-                        >
-                          <span className="studio-map__marker-icon">
-                            <MapPinIcon type={loc.icon} />
-                          </span>
-                          <span className="studio-map__marker-label">{loc.name}</span>
-                        </button>
-
-                        <article
-                          className="studio-map__card"
-                          aria-hidden={!isActive}
-                          style={{ backgroundImage: `url(${loc.image})` }}
-                        >
-                          <div className="studio-map__card-copy">
-                            <h3>{loc.cardTitle}</h3>
-                            <p>{loc.cardBody}</p>
-                          </div>
-                        </article>
-                      </div>
-                    );
-                  })}
                 </div>
+              </div>
+            </div>
+          </section>
+
+
+          <section className="studio-team" aria-label="Key Team Members">
+            <div className="studio-team__head">
+              <h2 className="studio-team__heading">
+                Key <span>Team Members</span>
+              </h2>
+              <p className="studio-team__intro">
+                Our team is a diverse and creative team of experts in the architectural and
+                construction management industry who bring a wealth of knowledge and experience to
+                every project. We proudly employ an eclectic group of professionals, with roots
+                around the world with a range of perspectives. Our team approaches problems in
+                innovative ways, resulting in creative solutions that may not have been considered
+                otherwise.
+              </p>
+            </div>
+
+            <div className="studio-team__slider">
+              <div className="studio-team__carousel swiper" ref={teamSwiperRef}>
+                <div className="swiper-wrapper">
+                  {KEY_TEAM_MEMBERS.map((member) => (
+                    <div className="swiper-slide" key={member.name}>
+                      <TeamMemberCard member={member} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="studio-team__dots" role="tablist" aria-label="Team slider">
+                {Array.from({ length: TEAM_DOT_COUNT }).map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    role="tab"
+                    aria-selected={teamDot === i}
+                    aria-label={`Go to team group ${i + 1}`}
+                    className={`studio-team__dot${teamDot === i ? ' is-active' : ''}`}
+                    onClick={() => goTeamDot(i)}
+                  />
+                ))}
               </div>
             </div>
           </section>
@@ -654,33 +735,6 @@ export default function Studio() {
             </div>
           </section>
 
-          <section className="studio-team" aria-label="Key Team Members">
-            <div className="studio-team__head">
-              <h2 className="studio-team__heading">
-                Meet our Key <span>Team Members</span>
-              </h2>
-              <p className="studio-team__intro">
-                Our team is a diverse and creative team of experts in the architectural and
-                construction management industry who bring a wealth of knowledge and experience to
-                every project. We proudly employ an eclectic group of professionals, with roots
-                around the world with a range of perspectives. Our team approaches problems in
-                innovative ways, resulting in creative solutions that may not have been considered
-                otherwise.
-              </p>
-            </div>
-
-            <ul className="studio-team__grid">
-              {KEY_TEAM_MEMBERS.map((member) => (
-                <li key={member.name} className="studio-team__card">
-                  <div className="studio-team__photo">
-                    <img src={member.image} alt={member.name} loading="lazy" />
-                  </div>
-                  <h3 className="studio-team__name">{member.name}</h3>
-                  <p className="studio-team__role">{member.title}</p>
-                </li>
-              ))}
-            </ul>
-          </section>
 
           <section className="studio-why" aria-label="Why Choose AE3">
             <div className="studio-why__grid">
@@ -725,6 +779,75 @@ export default function Studio() {
             </div>
           </section>
 
+          <section className="studio-careers" aria-label="Careers">
+            <div className="studio-careers__inner">
+              <header className="studio-careers__head">
+                <p className="studio-careers__eyebrow">Careers</p>
+                <h2 className="studio-careers__heading">
+                  Join Our Team and Design Your Career with AE3
+                </h2>
+                <p className="studio-careers__lead">
+                  We love what we do. Explore current openings and grow with a collaborative,
+                  team-oriented studio across architecture and construction management.
+                </p>
+              </header>
+
+              <div className="studio-careers__openings">
+
+                <div className="studio-careers__list">
+                  {JOB_OPENINGS.map((job, index) => {
+                    const isOpen = openCareer === job.id;
+                    return (
+                      <article
+                        key={job.id}
+                        className={`studio-career${isOpen ? ' is-open' : ''}`}
+                      >
+                        <button
+                          type="button"
+                          className="studio-career__trigger"
+                          aria-expanded={isOpen}
+                          onClick={() => toggleCareer(job.id)}
+                        >
+                          <span className="studio-career__index">
+                            {String(index + 1).padStart(2, '0')}
+                          </span>
+                          <span className="studio-career__meta">
+                            <span className="studio-career__title">{job.title}</span>
+                            <span className="studio-career__summary">{job.summary}</span>
+                          </span>
+                          <span className="studio-career__toggle" aria-hidden="true">
+                            {isOpen ? '−' : '+'}
+                          </span>
+                        </button>
+
+                        <div className="studio-career__panel" role="region">
+                          <div className="studio-career__panel-inner">
+                            {job.body.map((paragraph) => (
+                              <p key={paragraph.slice(0, 48)}>{paragraph}</p>
+                            ))}
+
+                            {job.bullets?.length ? (
+                              <ul className="studio-career__bullets">
+                                {job.bullets.map((bullet) => (
+                                  <li key={bullet.slice(0, 48)}>{bullet}</li>
+                                ))}
+                              </ul>
+                            ) : null}
+
+                            <p className="studio-career__apply">
+                              For consideration, please email your resume to:{' '}
+                              <a href={`mailto:${job.applyEmail}`}>{job.applyEmail}</a>
+                            </p>
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </section>
+
           <section className="studio-team-cta" aria-label="Our team culture">
             <div className="studio-team-cta__media">
               <video
@@ -734,7 +857,6 @@ export default function Studio() {
                 loop
                 playsInline
                 preload="metadata"
-                poster={`${P}/assets/newimages/cta.png`}
                 aria-label="AE3 Partners team gathering together"
               >
                 <source

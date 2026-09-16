@@ -3616,7 +3616,7 @@ ul {
     width: 100%;
     opacity: .5;
     visibility: visible;
-    cursor: url(../img/cancel.png), auto
+    cursor: pointer
 }
 
 @media only screen and (max-width: 992px) {
@@ -3826,7 +3826,7 @@ ul {
         width: 100%;
         opacity: .5;
         visibility: visible;
-        cursor: url(../img/cancel.png), auto
+        cursor: pointer
     }
 }
 

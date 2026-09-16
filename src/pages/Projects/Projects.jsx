@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Header from '../Home/components/Header';
 import MobileSideMenu from '../Home/components/MobileSideMenu';
 import SiteFooter from '../../components/SiteFooter/SiteFooter';
-import { fetchProjectCategories, fetchProjects } from '../../api/projectsApi';
+import { fetchProjectCategories, fetchProjects, getApiBaseUrl } from '../../api/projectsApi';
 import './ProjectsPage.css';
 
 const P = process.env.PUBLIC_URL || '';
@@ -390,7 +390,7 @@ const AllProjectsSection = memo(function AllProjectsSection({
         {listError ? (
           <p className="pp-reveal pp-is-visible" style={{ marginTop: '1.5rem', color: '#b42318' }}>
             Could not load projects. Make sure the API is running at{' '}
-            {process.env.REACT_APP_API_URL || 'http://ae3partnersadmin.testdemolink.com'}.
+            {getApiBaseUrl()}.
           </p>
         ) : null}
 

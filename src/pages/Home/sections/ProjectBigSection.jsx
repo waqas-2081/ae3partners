@@ -9,6 +9,7 @@ const projects = [
     img: `${P}/assets/newimages/new.png`,
     title: 'Liberation Park Market Hall & Communal Courtyard',
     location: 'Oakland, California',
+    slug: 'liberation-park-market-hall-communal-courtyard-black-cultural-zone-community-development-corporation-RxNp',
     description:
       'Created as a place to gather, celebrate, and grow, Liberation Park provides local entrepreneurs, artists, and residents with a vibrant community destination rooted in culture, connection, and opportunity.',
   },
@@ -17,6 +18,7 @@ const projects = [
     img: `${P}/assets/newimages/featured-projects/college-of-alameda-aviation.png`,
     title: 'College of Alameda Aviation Complex',
     location: 'Alameda, California',
+    slug: 'college-of-alameda-aviation-complex-phases-i-ii-peralta-community-college-district-I3Gx',
     description:
       'A new gateway for aviation education, providing students with hands-on training, modern learning environments, and pathways to careers in one of the region\'s most vital industries.',
     reverse: true,
@@ -26,6 +28,7 @@ const projects = [
     img: `${P}/assets/newimages/dublin.png`,
     title: 'Dublin Transit Center Parking Garage',
     location: 'Dublin, CA',
+    slug: 'dublin-transit-center-parking-garage-alameda-county-general-services-agency-county-of-alameda-iMew',
     description:
       'AE3 served as the Designer / Basis of Design Architect for a new ground-up 5 level, 570 space Transit Oriented Parking Garage for Alameda County in Dublin, CA.',
   },
@@ -34,45 +37,46 @@ const projects = [
 export default function ProjectBigSection() {
   return (
     <section className="fp" aria-label="Featured projects">
-    
-
       <div className="fp__list">
-        {projects.map((project) => (
-          <article
-            key={project.title}
-            className={`fp__row${project.reverse ? ' fp__row--reverse' : ''}`}
-          >
-            <div className="fp__content">
-              <span className="fp__num" aria-hidden="true">
-                {project.n}
-              </span>
-              <div className="fp__location">
-                <span className="fp__location-dot" />
-                {project.location}
+        {projects.map((project) => {
+          const detailPath = `/projects/${project.slug}`;
+          return (
+            <article
+              key={project.slug}
+              className={`fp__row${project.reverse ? ' fp__row--reverse' : ''}`}
+            >
+              <div className="fp__content">
+                <span className="fp__num" aria-hidden="true">
+                  {project.n}
+                </span>
+                <div className="fp__location">
+                  <span className="fp__location-dot" />
+                  {project.location}
+                </div>
+                <h3 className="fp__project-title">{project.title}</h3>
+                <p className="fp__desc">{project.description}</p>
+                <Link to={detailPath} className="fp__btn">
+                  <span>View Details</span>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path
+                      d="M3 8h10M9 4l4 4-4 4"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </Link>
               </div>
-              <h3 className="fp__project-title">{project.title}</h3>
-              <p className="fp__desc">{project.description}</p>
-              <Link to="/projects" className="fp__btn">
-                <span>View Details</span>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                  <path
-                    d="M3 8h10M9 4l4 4-4 4"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </Link>
-            </div>
 
-            <div className="fp__media">
-              <div className="fp__img-wrap">
-                <img src={project.img} alt={project.title} loading="lazy" />
+              <div className="fp__media">
+                <Link to={detailPath} className="fp__img-wrap" aria-label={`View ${project.title}`}>
+                  <img src={project.img} alt={project.title} loading="lazy" />
+                </Link>
               </div>
-            </div>
-          </article>
-        ))}
+            </article>
+          );
+        })}
       </div>
     </section>
   );
