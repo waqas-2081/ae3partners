@@ -7,28 +7,9 @@ import { fetchProjectCategories, fetchProjects, getApiBaseUrl } from '../../api/
 import './ProjectsPage.css';
 
 const P = process.env.PUBLIC_URL || '';
-const SLIDE_INTERVAL_MS = 5200;
-const FEATURED_SLIDER_LIMIT = 3;
+const FEATURED_VIDEO = `${P}/assets/video/project.mp4`;
 const GRID_BATCH_SIZE = 6;
 const GRID_INITIAL_COUNT = 6;
-
-const FEATURED_IMAGE_OVERRIDES = [
-  {
-    match: /liberation-park/i,
-    image: `${P}/assets/newimages/featured-projects/liberation-park-featured.png`,
-  },
-  {
-    match: /kingmakers/i,
-    image: `${P}/assets/newimages/featured-projects/kingmakers-featured.png`,
-  },
-];
-
-function featuredSlideImage(proj) {
-  if (!proj) return '';
-  const haystack = `${proj.slug || ''} ${proj.title || ''}`;
-  const override = FEATURED_IMAGE_OVERRIDES.find((row) => row.match.test(haystack));
-  return override?.image || proj.image || '';
-}
 
 function projectCardKey(proj) {
   return proj.slug || String(proj.id);
@@ -68,146 +49,36 @@ function useScrollGridCount(total, resetKey) {
   return { visibleCount, sentinelRef };
 }
 
-const FeaturedSlider = memo(function FeaturedSlider({ projects }) {
-  const [slideIdx, setSlideIdx] = useState(0);
-  const slideIdxRef = useRef(0);
-  const viewportRef = useRef(null);
-  const slideCount = projects.length;
-  slideIdxRef.current = slideIdx;
-
-  const goSlide = useCallback(
-    (next) => {
-      if (!slideCount) return;
-      setSlideIdx((next + slideCount) % slideCount);
-    },
-    [slideCount]
-  );
-
-  useEffect(() => {
-    setSlideIdx(0);
-  }, [projects]);
-
-  useEffect(() => {
-    projects.forEach((proj) => {
-      const src = featuredSlideImage(proj);
-      if (!src) return;
-      const img = new Image();
-      img.decoding = 'async';
-      img.src = src;
-    });
-  }, [projects]);
-
-  useEffect(() => {
-    const viewport = viewportRef.current;
-    if (viewport) viewport.classList.add('pp-is-visible');
-  }, [projects]);
-
-  useEffect(() => {
-    if (!slideCount || slideCount < 2) return undefined;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
-
-    const tick = () => {
-      if (document.hidden) return;
-      goSlide(slideIdxRef.current + 1);
-    };
-
-    const id = window.setInterval(tick, SLIDE_INTERVAL_MS);
-    return () => window.clearInterval(id);
-  }, [goSlide, slideCount]);
-
-  const activeProject = projects[slideIdx];
-  if (!activeProject) return null;
-
+function FeaturedWorkVideo() {
   return (
     <>
-            <div className="pp-container pp-container--head">
-              <div className="pp-featured-head pp-reveal">
-                <div>
-                  <p className="pp-section-eyebrow">Spotlight</p>
-                  <h2 className="pp-section-title">Featured Work</h2>
-                  <p className="pp-section-sub">
-                    Landmark work shaping communities, campuses, and infrastructure across California.
-                  </p>
-                </div>
-                <div className="pp-slider-nav">
-                  <button
-                    type="button"
-                    className="pp-slider-btn"
-                    aria-label="Previous featured project"
-                    onClick={() => goSlide(slideIdx - 1)}
-              disabled={slideCount < 2}
-                  >
-                    ←
-                  </button>
-                  <button
-                    type="button"
-                    className="pp-slider-btn"
-                    aria-label="Next featured project"
-                    onClick={() => goSlide(slideIdx + 1)}
-              disabled={slideCount < 2}
-                  >
-                    →
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div
-        ref={viewportRef}
-        className="pp-slider-viewport pp-slider-viewport--single pp-reveal pp-is-visible"
-      >
-        <article className="pp-slide pp-is-active">
-          <div className="pp-slide-stack" aria-hidden="true">
-            {projects.map((proj, i) => {
-              const src = featuredSlideImage(proj);
-              if (!src) return null;
-              return (
-                <img
-                  key={projectCardKey(proj)}
-                  src={src}
-                  alt=""
-                  className={i === slideIdx ? 'pp-is-active' : ''}
-                  loading={i === 0 ? 'eager' : 'lazy'}
-                  decoding="async"
-                  fetchPriority={i === 0 ? 'high' : 'low'}
-                />
-              );
-            })}
+      <div className="pp-container pp-container--head">
+        <div className="pp-featured-head pp-reveal">
+          <div>
+            <p className="pp-section-eyebrow">Spotlight</p>
+            <h2 className="pp-section-title">Featured Work</h2>
+            <p className="pp-section-sub">
+              Landmark work shaping communities, campuses, and infrastructure across California.
+            </p>
           </div>
-                    <div className="pp-slide-overlay" />
-                    <div className="pp-slide-content">
-            <span className="pp-slide-tag">{activeProject.location || 'California'}</span>
-            <h3 className="pp-slide-title">{activeProject.title}</h3>
-            <p className="pp-slide-meta">{activeProject.excerpt || ''}</p>
-            {activeProject.slug ? (
-              <Link className="pp-slide-link" to={`/projects/${activeProject.slug}`}>
-                        Explore project →
-              </Link>
-            ) : (
-              <span className="pp-slide-link">Explore project →</span>
-            )}
-                    </div>
-                  </article>
-            </div>
+        </div>
+      </div>
 
-            <div className="pp-container pp-container--head">
-              <div className="pp-slider-dots" role="tablist" aria-label="Featured slides">
-          {projects.map((proj, i) => (
-                  <button
-              key={projectCardKey(proj)}
-                    type="button"
-                    role="tab"
-                    aria-selected={i === slideIdx}
-                    aria-label={`Slide ${i + 1}`}
-                    className={`pp-dot ${i === slideIdx ? 'pp-is-active' : ''}`}
-                    onClick={() => goSlide(i)}
-                  />
-                ))}
-              </div>
-            </div>
+      <div className="pp-featured-video pp-reveal pp-is-visible">
+        <video
+          className="pp-featured-video__media"
+          src={FEATURED_VIDEO}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-label="AE3 featured project video"
+        />
+      </div>
     </>
   );
-});
+}
 
 const ProjectCard = memo(function ProjectCard({ proj, badgeLabel }) {
   return (
@@ -254,19 +125,6 @@ const ProjectCard = memo(function ProjectCard({ proj, badgeLabel }) {
     </article>
   );
 });
-
-function FeaturedSliderSkeleton() {
-  return (
-    <div className="pp-skel-featured" aria-hidden="true">
-      <div className="pp-skel-featured-inner">
-        <span className="pp-skel pp-skel-tag" />
-        <span className="pp-skel pp-skel-title" />
-        <span className="pp-skel pp-skel-meta" />
-        <span className="pp-skel pp-skel-btn" />
-      </div>
-    </div>
-  );
-}
 
 function ProjectTabsSkeleton() {
   return (
@@ -425,11 +283,6 @@ export default function Projects() {
   const [listLoading, setListLoading] = useState(true);
   const [listError, setListError] = useState(null);
 
-  const featuredProjects = useMemo(
-    () => projects.slice(0, FEATURED_SLIDER_LIMIT),
-    [projects]
-  );
-
   useEffect(() => {
     let cancelled = false;
 
@@ -487,24 +340,7 @@ export default function Projects() {
       >
         <div id="app-content" className="studio-reveal-content">
           <section className="pp-section pp-featured" id="pp-featured">
-            {listLoading ? (
-              <div className="pp-container pp-container--head">
-                <div className="pp-featured-head pp-reveal">
-                  <div>
-                    <p className="pp-section-eyebrow">Spotlight</p>
-                    <h2 className="pp-section-title">Featured Work</h2>
-                    <p className="pp-section-sub">
-                      Landmark work shaping communities, campuses, and infrastructure across California.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {listLoading ? <FeaturedSliderSkeleton /> : null}
-            {!listLoading && featuredProjects.length > 0 ? (
-              <FeaturedSlider projects={featuredProjects} />
-            ) : null}
+            <FeaturedWorkVideo />
           </section>
 
           <AllProjectsSection

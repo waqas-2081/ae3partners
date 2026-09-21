@@ -177,11 +177,21 @@
     padding: 0 10px;
     margin: 0;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     background: rgba(0, 47, 135, 0.08);
     cursor: pointer;
     flex-shrink: 0;
     -webkit-tap-highlight-color: transparent;
+    transition: background 0.25s ease, transform 0.25s ease;
+  }
+
+  .header .ae3-hamburger-btn:hover,
+  .header .ae3-hamburger-btn:focus-visible {
+    background: rgba(0, 47, 135, 0.14);
+  }
+
+  .header .ae3-hamburger-btn.is-open {
+    background: var(--secondary, #d05727);
   }
 
   .header .ae3-hamburger-btn span {
@@ -190,7 +200,11 @@
     border-radius: 2px;
     background: #002f87;
     margin-left: auto;
-    transition: width 0.25s ease, opacity 0.25s ease;
+    transition: width 0.25s ease, opacity 0.25s ease, transform 0.28s ease, background 0.25s ease;
+  }
+
+  .header .ae3-hamburger-btn.is-open span {
+    background: #fff;
   }
 
   .header .ae3-hamburger-btn span:nth-child(1) {
@@ -205,6 +219,21 @@
     width: 12px;
   }
 
+  .header .ae3-hamburger-btn.is-open span:nth-child(1) {
+    width: 18px;
+    transform: translateY(7.5px) rotate(45deg);
+  }
+
+  .header .ae3-hamburger-btn.is-open span:nth-child(2) {
+    opacity: 0;
+    width: 0;
+  }
+
+  .header .ae3-hamburger-btn.is-open span:nth-child(3) {
+    width: 18px;
+    transform: translateY(-7.5px) rotate(-45deg);
+  }
+
   .header .ae3-hamburger-btn:hover span:nth-child(1),
   .header .ae3-hamburger-btn:focus-visible span:nth-child(1) {
     width: 22px;
@@ -213,6 +242,13 @@
   .header .ae3-hamburger-btn:hover span:nth-child(3),
   .header .ae3-hamburger-btn:focus-visible span:nth-child(3) {
     width: 15px;
+  }
+
+  .header .ae3-hamburger-btn.is-open:hover span:nth-child(1),
+  .header .ae3-hamburger-btn.is-open:focus-visible span:nth-child(1),
+  .header .ae3-hamburger-btn.is-open:hover span:nth-child(3),
+  .header .ae3-hamburger-btn.is-open:focus-visible span:nth-child(3) {
+    width: 18px;
   }
 
   /* Template overlay z-index (10) sits under .header (99); raise drawer above header but below pd-lightbox (10050). */

@@ -157,14 +157,10 @@
         // which causes "removeChild/insertBefore NotFoundError" during route updates.
         // Side menu content is rendered directly by React (MobileSideMenu.jsx).
 
-        // Mobile Sidemenu
-        $(".mobile-side-menu-toggle").on("click", function () {
-            $(".mobile-side-menu, .mobile-side-menu-overlay").toggleClass("is-open");
-        });
-
-        $(".mobile-side-menu-close, .mobile-side-menu-overlay").on("click", function () {
-            $(".mobile-side-menu, .mobile-side-menu-overlay").removeClass("is-open");
-        });
+        // Mobile Sidemenu — handled by React (MobileSideMenu.jsx) so it works
+        // after SPA route changes. Do not bind jQuery toggles here.
+        // $(".mobile-side-menu-toggle").on("click", ...);
+        // $(".mobile-side-menu-close, .mobile-side-menu-overlay").on("click", ...);
 
         // Popup Search Box
         $(function () {

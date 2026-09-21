@@ -51,7 +51,6 @@
   }
 
   .ae3-about .about-img {
-    height: min(52vw, 420px);
     margin-left: 0;
   }
 
@@ -111,10 +110,7 @@
     margin-bottom: 28px;
   }
 
-  .ae3-about .about-img {
-    height: min(68vw, 300px);
-    min-height: 220px;
-  }
+
 
   .ae3-about .about-img img {
     border-radius: 16px;
@@ -146,10 +142,7 @@
     font-size: clamp(24px, 8vw, 30px);
   }
 
-  .ae3-about .about-img {
-    height: 210px;
-    min-height: 0;
-  }
+
 
   .ae3-about .about-img img {
     border-radius: 14px;

@@ -75,6 +75,8 @@ export default function Header() {
                     type="button"
                     className="mobile-side-menu-toggle ae3-hamburger-btn"
                     aria-label="Open menu"
+                    aria-expanded="false"
+                    aria-controls="ae3-mobile-drawer"
                   >
                     <span aria-hidden="true" />
                     <span aria-hidden="true" />
