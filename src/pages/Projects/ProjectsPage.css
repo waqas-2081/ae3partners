@@ -353,6 +353,7 @@
 }
 
 .projects-page .pp-featured-video {
+  position: relative;
   width: 100%;
   overflow: hidden;
   background: #0d1520;
@@ -369,6 +370,44 @@
   object-position: center;
   vertical-align: top;
   border: 0;
+}
+
+.projects-page .pp-featured-video__sound {
+  position: absolute;
+  right: clamp(14px, 2.5vw, 28px);
+  bottom: clamp(14px, 2.5vw, 28px);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(13, 21, 32, 0.72);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+
+.projects-page .pp-featured-video__sound svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.projects-page .pp-featured-video__sound:hover,
+.projects-page .pp-featured-video__sound.is-on {
+  background: var(--pp-orange, #d05727);
+  border-color: var(--pp-orange, #d05727);
+}
+
+.projects-page .pp-featured-video__sound:hover {
+  transform: translateY(-1px);
 }
 
 .projects-page .pp-slider-nav {

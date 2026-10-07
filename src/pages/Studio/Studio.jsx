@@ -192,23 +192,67 @@ const MISSION_SLIDES = [
 const TEAM_IMG = `${P}/assets/newimages/team`;
 
 const KEY_TEAM_MEMBERS = [
-  { name: "Anika Scott", title: "Project Manager & Architect", image: `${TEAM_IMG}/1.png` },
-  { name: "Ann Prometheus", title: "Project Manager, Associate", image: `${TEAM_IMG}/2.png` },
-  { name: "Anna Dunnigan", title: "Senior Project Manager & Architect, Associate Principal", image: `${TEAM_IMG}/3.png` },
-  { name: "Antoinette Nascimento",title: "Senior Project Manager & Architect",image: `${TEAM_IMG}/4.png`,},
+  {
+    name: "Anika Scott",
+    title: "Project Manager & Architect",
+    image: `${TEAM_IMG}/1.png`,
+  },
+  {
+    name: "Ann Prometheus",
+    title: "Project Manager, Associate",
+    image: `${TEAM_IMG}/2.png`,
+  },
+  {
+    name: "Anna Dunnigan",
+    title: "Senior Project Manager & Architect, Associate Principal",
+    image: `${TEAM_IMG}/3.png`,
+  },
+  {
+    name: "Antoinette Nascimento",
+    title: "Senior Project Manager & Architect",
+    image: `${TEAM_IMG}/4.png`,
+  },
   { name: "Ben Loggins", title: "QA:QC Manager", image: `${TEAM_IMG}/5.png` },
   { name: "Cynthia O'Day", title: "Accountant", image: `${TEAM_IMG}/6.png` },
-  {name: "Doug Davis",title: "Managing Principal",image: `${TEAM_IMG}/7.png`,},
-  { name: "Elizabeth Andrews", title: "Federal Pursuits Manager, Senior Associate", image: `${TEAM_IMG}/8.png` },
-  { name: "Jacqueline Saucedo", title: "Job Captain", image: `${TEAM_IMG}/9.png` },
-  { name: "Lisa Arias", title: "Senior Marketing Manager, Associate", image: `${TEAM_IMG}/10.png` },
-  { name: "Marta Wojcik",title: "Job Captain",image: `${TEAM_IMG}/11.png`,},
-  { name: "Mike Wilson", title: "Project Manager & Architect", image: `${TEAM_IMG}/12.png` },
+  {
+    name: "Doug Davis",
+    title: "Managing Principal",
+    image: `${TEAM_IMG}/7.png`,
+  },
+  {
+    name: "Elizabeth Andrews",
+    title: "Federal Pursuits Manager, Senior Associate",
+    image: `${TEAM_IMG}/8.png`,
+  },
+  {
+    name: "Jacqueline Saucedo",
+    title: "Job Captain",
+    image: `${TEAM_IMG}/9.png`,
+  },
+  {
+    name: "Lisa Arias",
+    title: "Senior Marketing Manager, Associate",
+    image: `${TEAM_IMG}/10.png`,
+  },
+  { name: "Marta Wojcik", title: "Job Captain", image: `${TEAM_IMG}/11.png` },
+  {
+    name: "Mike Wilson",
+    title: "Project Manager & Architect",
+    image: `${TEAM_IMG}/12.png`,
+  },
   { name: "Omar Higaredo", title: "Job Captain", image: `${TEAM_IMG}/13.png` },
-  {name: "Philip Taylor",title: "Job Captain",image: `${TEAM_IMG}/14.png`,},
-  { name: "Rick Dumas", title: "Managing Principal", image: `${TEAM_IMG}/15.png` },
+  { name: "Philip Taylor", title: "Job Captain", image: `${TEAM_IMG}/14.png` },
+  {
+    name: "Rick Dumas",
+    title: "Managing Principal",
+    image: `${TEAM_IMG}/15.png`,
+  },
   { name: "Syl Kulkarni", title: "Job Captain", image: `${TEAM_IMG}/16.png` },
-  { name: "Troy Newell", title: "Project Manager & Architect, Associate", image: `${TEAM_IMG}/17.png` },
+  {
+    name: "Troy Newell",
+    title: "Project Manager & Architect, Associate",
+    image: `${TEAM_IMG}/17.png`,
+  },
   { name: "Willy Deng", title: "IT Manager", image: `${TEAM_IMG}/18.png` },
 ];
 
@@ -222,7 +266,7 @@ const LEADERSHIP_MEMBERS = [
   {
     name: "Doug Davis",
     title: "AIA, MBA, DBIA, NCARB, Managing Principal",
-    image: `${TEAM_IMG}/doug.png` ,
+    image: `${TEAM_IMG}/doug.png`,
   },
   {
     name: "Anna Dunnigan",
@@ -373,8 +417,8 @@ function useLeadershipSwiper(carouselRef) {
       ).matches;
 
       instance = new window.Swiper(el, {
-        slidesPerView: 1.15,
-        spaceBetween: 16,
+        slidesPerView: 1,
+        spaceBetween: 14,
         centeredSlides: false,
         loop: LEADERSHIP_MEMBERS.length > 3,
         speed: 550,
@@ -686,6 +730,58 @@ export default function Studio() {
             </div>
           </section>
 
+          <section className="studio-leadership" aria-label="Leadership Team">
+            <div className="studio-leadership__head">
+              <p className="studio-leadership__eyebrow">AE3 TEAM</p>
+              <h2 className="studio-leadership__heading">Leadership Team</h2>
+              <p className="studio-leadership__text">
+                We wanted to create a workplace where inclusion and transparency
+                were the key elements to our success. With AE3, we&apos;ve been
+                able to build something special. Our team is our greatest asset
+                and it&apos;s because of them that we have succeeded and
+                continue to build strong relationships with our clients and in
+                our communities.
+              </p>
+              <p className="studio-leadership__byline-inline">
+                Rick L. Dumas and Doug Davis — Founders of AE3
+              </p>
+            </div>
+
+            <div className="studio-leadership__slider">
+              <div
+                className="studio-leadership__carousel swiper"
+                ref={leadershipSwiperRef}
+              >
+                <div className="swiper-wrapper">
+                  {LEADERSHIP_MEMBERS.map((member) => (
+                    <div className="swiper-slide" key={member.name}>
+                      <article className="studio-leadership__card">
+                        <div className="studio-leadership__card-photo">
+                          <img
+                            src={member.image}
+                            alt={member.name}
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                        <h3 className="studio-leadership__card-name">
+                          {member.name}
+                        </h3>
+                        <p className="studio-leadership__card-role">
+                          {member.title}
+                        </p>
+                      </article>
+                    </div>
+                  ))}
+                </div>
+                <div
+                  className="studio-leadership__dots"
+                  aria-label="Leadership slider"
+                />
+              </div>
+            </div>
+          </section>
+
           <section className="studio-team" aria-label="Key Team Members">
             <div className="studio-team__head">
               <h2 className="studio-team__heading">
@@ -715,8 +811,20 @@ export default function Studio() {
                 >
                   <span className="studio-team__tab-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none">
-                      <circle cx="9" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.7" />
-                      <circle cx="16.5" cy="9" r="2.4" stroke="currentColor" strokeWidth="1.7" />
+                      <circle
+                        cx="9"
+                        cy="8"
+                        r="3.2"
+                        stroke="currentColor"
+                        strokeWidth="1.7"
+                      />
+                      <circle
+                        cx="16.5"
+                        cy="9"
+                        r="2.4"
+                        stroke="currentColor"
+                        strokeWidth="1.7"
+                      />
                       <path
                         d="M3.5 18.5c.6-2.8 2.8-4.4 5.5-4.4s4.9 1.6 5.5 4.4"
                         stroke="currentColor"
@@ -751,7 +859,13 @@ export default function Studio() {
                         stroke="currentColor"
                         strokeWidth="1.7"
                       />
-                      <circle cx="9" cy="11" r="2" stroke="currentColor" strokeWidth="1.7" />
+                      <circle
+                        cx="9"
+                        cy="11"
+                        r="2"
+                        stroke="currentColor"
+                        strokeWidth="1.7"
+                      />
                       <path
                         d="M12.5 14.5 15 12l3.5 4.5H7.5l2.2-2.8 2.8 2.8z"
                         fill="currentColor"
@@ -793,56 +907,28 @@ export default function Studio() {
             )}
           </section>
 
-          <section className="studio-leadership" aria-label="Leadership Team">
-            <div className="studio-leadership__head">
-              <p className="studio-leadership__eyebrow">AE3 TEAM</p>
-              <h2 className="studio-leadership__heading">Leadership Team</h2>
-              <p className="studio-leadership__text">
-                We wanted to create a workplace where inclusion and transparency
-                were the key elements to our success. With AE3, we&apos;ve been
-                able to build something special. Our team is our greatest asset
-                and it&apos;s because of them that we have succeeded and continue
-                to build strong relationships with our clients and in our
-                communities.
-              </p>
-              <p className="studio-leadership__byline-inline">
-                Rick L. Dumas and Doug Davis — Founders of AE3
+          <section
+            className="studio-headshots"
+            aria-label="Leadership Headshots"
+          >
+            <div className="studio-headshots__head">
+              <p className="studio-headshots__eyebrow">AE3 Leadership</p>
+              <h2 className="studio-headshots__heading">
+                Leadership Headshots
+              </h2>
+              <p className="studio-headshots__lead">
+                Portraits and moments that capture the people leading AE3 from
+                studio life to the communities we serve.
               </p>
             </div>
-
-            <div className="studio-leadership__slider">
-              <div
-                className="studio-leadership__carousel swiper"
-                ref={leadershipSwiperRef}
-              >
-                <div className="swiper-wrapper">
-                  {LEADERSHIP_MEMBERS.map((member) => (
-                    <div className="swiper-slide" key={member.name}>
-                      <article className="studio-leadership__card">
-                        <div className="studio-leadership__card-photo">
-                          <img
-                            src={member.image}
-                            alt={member.name}
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        </div>
-                        <h3 className="studio-leadership__card-name">
-                          {member.name}
-                        </h3>
-                        <p className="studio-leadership__card-role">
-                          {member.title}
-                        </p>
-                      </article>
-                    </div>
-                  ))}
-                </div>
-                <div
-                  className="studio-leadership__dots"
-                  aria-label="Leadership slider"
-                />
-              </div>
-            </div>
+            <figure className="studio-headshots__media">
+              <img
+                src={`${P}/assets/newimages/leadership-headshots.jpg`}
+                alt="AE3 leadership team headshots and studio moments collage"
+                loading="lazy"
+                decoding="async"
+              />
+            </figure>
           </section>
 
           <section className="studio-why" aria-label="Why Choose AE3">

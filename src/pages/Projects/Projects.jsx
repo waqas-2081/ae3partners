@@ -50,6 +50,20 @@ function useScrollGridCount(total, resetKey) {
 }
 
 function FeaturedWorkVideo() {
+  const videoRef = useRef(null);
+  const [muted, setMuted] = useState(true);
+
+  const toggleSound = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    const nextMuted = !muted;
+    video.muted = nextMuted;
+    setMuted(nextMuted);
+    if (!nextMuted) {
+      video.play().catch(() => {});
+    }
+  };
+
   return (
     <>
       <div className="pp-container pp-container--head">
@@ -66,15 +80,56 @@ function FeaturedWorkVideo() {
 
       <div className="pp-featured-video pp-reveal pp-is-visible">
         <video
+          ref={videoRef}
           className="pp-featured-video__media"
           src={FEATURED_VIDEO}
           autoPlay
-          muted
+          muted={muted}
           loop
           playsInline
           preload="metadata"
           aria-label="AE3 featured project video"
         />
+        <button
+          type="button"
+          className={`pp-featured-video__sound${muted ? '' : ' is-on'}`}
+          onClick={toggleSound}
+          aria-label={muted ? 'Unmute video' : 'Mute video'}
+          aria-pressed={!muted}
+        >
+          {muted ? (
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M4 10v4h3.2L12 18V6L7.2 10H4z"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M16.5 9.5 20 13m0-3.5-3.5 3.5"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+              />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M4 10v4h3.2L12 18V6L7.2 10H4z"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M15.2 9.2a4.2 4.2 0 0 1 0 5.6M17.6 7a7 7 0 0 1 0 10"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+              />
+            </svg>
+          )}
+          <span>{muted ? 'Sound' : 'Mute'}</span>
+        </button>
       </div>
     </>
   );
