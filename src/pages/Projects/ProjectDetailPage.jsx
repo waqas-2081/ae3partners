@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import Header from '../Home/components/Header';
 import MobileSideMenu from '../Home/components/MobileSideMenu';
 import SiteFooter from '../../components/SiteFooter/SiteFooter';
-import { fetchProjectBySlug } from '../../api/projectsApi';
+import { fetchProjectBySlug, resolvePlayableMedia } from '../../api/projectsApi';
 import { ensureTemplateScriptsLoaded } from '../../template/loadTemplateScripts';
 import './ProjectsPage.css';
 import './ProjectDetailPage.css';
@@ -103,19 +103,79 @@ function SpecCard({ spec, index }) {
   );
 }
 
+function LightboxMedia({ item }) {
+  if (!item) return null;
+
+  if (item.type === 'video') {
+    const media = resolvePlayableMedia(item.fileUrl, item.externalUrl, {
+      autoplay: true,
+      muted: false,
+      loop: false,
+    });
+    if (media?.kind === 'embed') {
+      return (
+        <iframe
+          className="pd-lightbox__embed"
+          src={media.src}
+          title={item.caption || 'Project video'}
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowFullScreen
+        />
+      );
+    }
+    return (
+      <video
+        key={media?.src || item.src}
+        className="pd-lightbox__video"
+        src={media?.src || item.src}
+        controls
+        autoPlay
+        playsInline
+      />
+    );
+  }
+
+  return <img src={item.src} alt={item.caption || ''} />;
+}
+
 function GalleryCell({ item, index, onOpen }) {
+  const isVideo = item.type === 'video';
   return (
     <button
       type="button"
-      className="pd-gallery-full__cell"
+      className={`pd-gallery-full__cell${isVideo ? ' pd-gallery-full__cell--video' : ''}`}
       onClick={() => onOpen(index)}
-      aria-label={`Open ${item.caption} in gallery`}
+      aria-label={isVideo ? `Play ${item.caption}` : `Open ${item.caption} in gallery`}
     >
-      <img src={item.src} alt={item.caption} loading="lazy" decoding="async" />
+      {isVideo && item.kind === 'file' ? (
+        <video
+          className="pd-gallery-full__video"
+          src={item.src}
+          muted
+          loop
+          autoPlay
+          playsInline
+          preload="metadata"
+          tabIndex={-1}
+        />
+      ) : isVideo && item.poster ? (
+        <img src={item.poster} alt="" loading="lazy" decoding="async" />
+      ) : isVideo ? (
+        <span className="pd-gallery-full__video-fallback" aria-hidden="true" />
+      ) : (
+        <img src={item.src} alt={item.caption} loading="lazy" decoding="async" />
+      )}
       <span className="pd-gallery-full__cell-overlay" aria-hidden="true" />
+      {isVideo ? (
+        <span className="pd-gallery-full__play" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M8 5.5v13l11-6.5-11-6.5z" />
+          </svg>
+        </span>
+      ) : null}
       <span className="pd-gallery-full__cell-caption">{item.caption}</span>
       <span className="pd-gallery-full__cell-zoom" aria-hidden="true">
-        +
+        {isVideo ? '▶' : '+'}
       </span>
     </button>
   );
@@ -238,12 +298,36 @@ function buildSpecs(project) {
 function buildGallery(project) {
   const fromApi = Array.isArray(project?.gallery)
     ? project.gallery
-        .filter((img) => img?.src)
-        .map((img) => ({
-          id: img.id,
-          src: img.src,
-          caption: img.caption || project.title || 'Project image',
-        }))
+        .map((img) => {
+          const isVideo = img?.type === 'video' || Boolean(img?.video || img?.video_url);
+          if (isVideo) {
+            const media = resolvePlayableMedia(img.video, img.video_url, {
+              autoplay: false,
+              muted: true,
+              loop: false,
+            });
+            if (!media?.src) return null;
+            return {
+              id: img.id,
+              type: 'video',
+              kind: media.kind,
+              src: media.src,
+              poster: media.poster || '',
+              fileUrl: img.video || '',
+              externalUrl: img.video_url || '',
+              caption: img.caption || project.title || 'Project video',
+            };
+          }
+          if (!img?.src) return null;
+          return {
+            id: img.id,
+            type: 'image',
+            kind: 'image',
+            src: img.src,
+            caption: img.caption || project.title || 'Project image',
+          };
+        })
+        .filter(Boolean)
     : [];
 
   if (fromApi.length) return fromApi;
@@ -422,8 +506,8 @@ export default function ProjectDetailPage() {
 
   const galleryImages = useMemo(() => buildGallery(project), [project]);
   const projectSpecs = useMemo(() => buildSpecs(project), [project]);
-  const gallerySrcs = useMemo(() => galleryImages.map((item) => item.src), [galleryImages]);
-  const heroImage = project?.image || galleryImages[0]?.src || '';
+  const heroImage =
+    project?.image || galleryImages.find((item) => item.type !== 'video')?.src || '';
   const captionBits = [
     project?.specs?.location,
     project?.specs?.size,
@@ -447,16 +531,16 @@ export default function ProjectDetailPage() {
   const closeLightbox = useCallback(() => setLightboxIndex(null), []);
   const goLightboxPrev = useCallback(() => {
     setLightboxIndex((i) => {
-      if (i === null || !gallerySrcs.length) return null;
-      return i <= 0 ? gallerySrcs.length - 1 : i - 1;
+      if (i === null || !galleryImages.length) return null;
+      return i <= 0 ? galleryImages.length - 1 : i - 1;
     });
-  }, [gallerySrcs.length]);
+  }, [galleryImages.length]);
   const goLightboxNext = useCallback(() => {
     setLightboxIndex((i) => {
-      if (i === null || !gallerySrcs.length) return null;
-      return i >= gallerySrcs.length - 1 ? 0 : i + 1;
+      if (i === null || !galleryImages.length) return null;
+      return i >= galleryImages.length - 1 ? 0 : i + 1;
     });
-  }, [gallerySrcs.length]);
+  }, [galleryImages.length]);
 
   useEffect(() => {
     try {
@@ -746,8 +830,8 @@ export default function ProjectDetailPage() {
         <SiteFooter />
       </div>
 
-      {lightboxIndex !== null && gallerySrcs.length ? (
-        <div className="pd-lightbox" role="dialog" aria-modal="true" aria-label="Image gallery">
+      {lightboxIndex !== null && galleryImages.length ? (
+        <div className="pd-lightbox" role="dialog" aria-modal="true" aria-label="Project gallery">
           <button
             type="button"
             className="pd-lightbox__backdrop"
@@ -766,7 +850,7 @@ export default function ProjectDetailPage() {
             ‹
           </button>
           <div className="pd-lightbox__frame">
-            <img src={gallerySrcs[lightboxIndex]} alt="" />
+            <LightboxMedia item={galleryImages[lightboxIndex]} />
           </div>
           <button
             type="button"
@@ -777,7 +861,7 @@ export default function ProjectDetailPage() {
             ›
           </button>
           <p className="pd-lightbox__counter" aria-live="polite">
-            {lightboxIndex + 1} / {gallerySrcs.length}
+            {lightboxIndex + 1} / {galleryImages.length}
           </p>
         </div>
       ) : null}

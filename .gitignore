@@ -10,7 +10,9 @@
 
 # production
 /build
+/ae3build
 /build.zip
+/ae3build.zip
 
 # misc
 .DS_Store

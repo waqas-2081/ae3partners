@@ -3,12 +3,11 @@ import { Link } from 'react-router-dom';
 import Header from '../Home/components/Header';
 import MobileSideMenu from '../Home/components/MobileSideMenu';
 import SiteFooter from '../../components/SiteFooter/SiteFooter';
-import { fetchProjectCategories, fetchProjects, getApiBaseUrl } from '../../api/projectsApi';
+import { fetchProjectCategories, fetchProjects, getApiBaseUrl, resolvePlayableMedia } from '../../api/projectsApi';
 import './ProjectsPage.css';
 
-const P = process.env.PUBLIC_URL || '';
-const FEATURED_VIDEO = `${P}/assets/video/project.mp4`;
 const GRID_BATCH_SIZE = 6;
+const FALLBACK_FEATURED_VIDEO = `${process.env.PUBLIC_URL || ''}/assets/video/project.mp4`;
 const GRID_INITIAL_COUNT = 6;
 
 function projectCardKey(proj) {
@@ -49,9 +48,13 @@ function useScrollGridCount(total, resetKey) {
   return { visibleCount, sentinelRef };
 }
 
-function FeaturedWorkVideo() {
+function FeaturedWorkVideo({ media, label }) {
   const videoRef = useRef(null);
   const [muted, setMuted] = useState(true);
+
+  useEffect(() => {
+    setMuted(true);
+  }, [media?.src]);
 
   const toggleSound = () => {
     const video = videoRef.current;
@@ -64,6 +67,8 @@ function FeaturedWorkVideo() {
     }
   };
 
+  if (!media?.src) return null;
+
   return (
     <>
       <div className="pp-container pp-container--head">
@@ -72,64 +77,80 @@ function FeaturedWorkVideo() {
             <p className="pp-section-eyebrow">Spotlight</p>
             <h2 className="pp-section-title">Featured Work</h2>
             <p className="pp-section-sub">
-              Landmark work shaping communities, campuses, and infrastructure across California.
+              {label
+                ? `Featured video for ${label}.`
+                : 'Landmark work shaping communities, campuses, and infrastructure across California.'}
             </p>
           </div>
         </div>
       </div>
 
       <div className="pp-featured-video pp-reveal pp-is-visible">
-        <video
-          ref={videoRef}
-          className="pp-featured-video__media"
-          src={FEATURED_VIDEO}
-          autoPlay
-          muted={muted}
-          loop
-          playsInline
-          preload="metadata"
-          aria-label="AE3 featured project video"
-        />
-        <button
-          type="button"
-          className={`pp-featured-video__sound${muted ? '' : ' is-on'}`}
-          onClick={toggleSound}
-          aria-label={muted ? 'Unmute video' : 'Mute video'}
-          aria-pressed={!muted}
-        >
-          {muted ? (
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M4 10v4h3.2L12 18V6L7.2 10H4z"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M16.5 9.5 20 13m0-3.5-3.5 3.5"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinecap="round"
-              />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M4 10v4h3.2L12 18V6L7.2 10H4z"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M15.2 9.2a4.2 4.2 0 0 1 0 5.6M17.6 7a7 7 0 0 1 0 10"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinecap="round"
-              />
-            </svg>
-          )}
-          <span>{muted ? 'Sound' : 'Mute'}</span>
-        </button>
+        {media.kind === 'embed' ? (
+          <iframe
+            key={media.src}
+            className="pp-featured-video__media pp-featured-video__embed"
+            src={media.src}
+            title={label ? `${label} video` : 'Featured project video'}
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+          />
+        ) : (
+          <video
+            key={media.src}
+            ref={videoRef}
+            className="pp-featured-video__media"
+            src={media.src}
+            autoPlay
+            muted={muted}
+            loop
+            playsInline
+            preload="metadata"
+            aria-label={label ? `${label} video` : 'Featured project video'}
+          />
+        )}
+        {media.kind === 'file' ? (
+          <button
+            type="button"
+            className={`pp-featured-video__sound${muted ? '' : ' is-on'}`}
+            onClick={toggleSound}
+            aria-label={muted ? 'Unmute video' : 'Mute video'}
+            aria-pressed={!muted}
+          >
+            {muted ? (
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M4 10v4h3.2L12 18V6L7.2 10H4z"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M16.5 9.5 20 13m0-3.5-3.5 3.5"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M4 10v4h3.2L12 18V6L7.2 10H4z"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M15.2 9.2a4.2 4.2 0 0 1 0 5.6M17.6 7a7 7 0 0 1 0 10"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                />
+              </svg>
+            )}
+            <span>{muted ? 'Sound' : 'Mute'}</span>
+          </button>
+        ) : null}
       </div>
     </>
   );
@@ -222,9 +243,9 @@ const AllProjectsSection = memo(function AllProjectsSection({
   listError,
   projects,
   categories,
+  activeTab,
+  onTabChange,
 }) {
-  const [activeTab, setActiveTab] = useState('all');
-
   const projectTabs = useMemo(
     () => [
       { id: 'all', label: 'All Projects' },
@@ -250,16 +271,6 @@ const AllProjectsSection = memo(function AllProjectsSection({
     filteredProjects.length,
     gridResetKey
   );
-
-  const handleTabChange = useCallback((tabId) => {
-    startTransition(() => setActiveTab(tabId));
-  }, []);
-
-  useEffect(() => {
-    if (activeTab === 'all') return;
-    const exists = categories.some((c) => c.slug === activeTab);
-    if (!exists) setActiveTab('all');
-  }, [categories, activeTab]);
 
   const visibleGridItems = useMemo(() => {
     return filteredProjects.slice(0, visibleGridCount).map((proj) => ({
@@ -292,7 +303,7 @@ const AllProjectsSection = memo(function AllProjectsSection({
                     role="tab"
                     aria-selected={activeTab === tab.id}
                     className={`pp-tab-btn ${activeTab === tab.id ? 'pp-is-active' : ''}`}
-                onClick={() => handleTabChange(tab.id)}
+                onClick={() => onTabChange(tab.id)}
                   >
                     {tab.label}
                   </button>
@@ -337,6 +348,7 @@ export default function Projects() {
   const [projects, setProjects] = useState([]);
   const [listLoading, setListLoading] = useState(true);
   const [listError, setListError] = useState(null);
+  const [activeTab, setActiveTab] = useState('all');
 
   useEffect(() => {
     let cancelled = false;
@@ -369,6 +381,29 @@ export default function Projects() {
   }, []);
 
   useEffect(() => {
+    if (activeTab === 'all') return;
+    const exists = categories.some((c) => c.slug === activeTab);
+    if (!exists) setActiveTab('all');
+  }, [categories, activeTab]);
+
+  const handleTabChange = useCallback((tabId) => {
+    startTransition(() => setActiveTab(tabId));
+  }, []);
+
+  const featured = useMemo(() => {
+    const fallback = { kind: 'file', src: FALLBACK_FEATURED_VIDEO, poster: '' };
+    if (!categories.length) return { media: fallback, label: '' };
+    const category =
+      activeTab === 'all' ? categories[0] : categories.find((cat) => cat.slug === activeTab);
+    if (!category) return { media: fallback, label: '' };
+    const uploaded = resolvePlayableMedia(category.video, category.video_url);
+    return {
+      media: uploaded || fallback,
+      label: uploaded ? category.name : '',
+    };
+  }, [activeTab, categories]);
+
+  useEffect(() => {
     try {
       if ('scrollRestoration' in window.history) {
         window.history.scrollRestoration = 'manual';
@@ -395,7 +430,11 @@ export default function Projects() {
       >
         <div id="app-content" className="studio-reveal-content">
           <section className="pp-section pp-featured" id="pp-featured">
-            <FeaturedWorkVideo />
+            <FeaturedWorkVideo
+              key={featured.media?.src || 'featured-pending'}
+              media={featured.media}
+              label={featured.label}
+            />
           </section>
 
           <AllProjectsSection
@@ -403,6 +442,8 @@ export default function Projects() {
             listError={listError}
             projects={projects}
             categories={categories}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
           />
         </div>
 

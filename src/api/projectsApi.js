@@ -159,9 +159,100 @@ function unwrapList(payload) {
   return [];
 }
 
+function extractYouTubeId(url) {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.replace(/^www\./i, '');
+    if (host === 'youtu.be') {
+      return parsed.pathname.split('/').filter(Boolean)[0] || null;
+    }
+    if (
+      host === 'youtube.com' ||
+      host === 'm.youtube.com' ||
+      host === 'music.youtube.com' ||
+      host === 'youtube-nocookie.com'
+    ) {
+      const fromQuery = parsed.searchParams.get('v');
+      if (fromQuery) return fromQuery;
+      const parts = parsed.pathname.split('/').filter(Boolean);
+      const marker = parts.findIndex((part) => part === 'embed' || part === 'shorts' || part === 'live');
+      if (marker >= 0 && parts[marker + 1]) return parts[marker + 1];
+    }
+  } catch (_) {
+    return null;
+  }
+  return null;
+}
+
+function extractVimeoId(url) {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.replace(/^www\./i, '');
+    if (host !== 'vimeo.com' && host !== 'player.vimeo.com') return null;
+    const parts = parsed.pathname.split('/').filter(Boolean);
+    return [...parts].reverse().find((part) => /^\d+$/.test(part)) || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+/**
+ * Uploaded file wins over an external link.
+ * `{ kind: 'file', src }` for a direct video, `{ kind: 'embed', src, poster }` for YouTube/Vimeo.
+ */
+export function resolvePlayableMedia(fileUrl, externalUrl, options = {}) {
+  const { autoplay = true, muted = true, loop = true } = options;
+  const file = fileUrl ? normalizeMediaUrl(fileUrl) : '';
+  const external = externalUrl ? String(externalUrl).trim() : '';
+  if (!file && !external) return null;
+
+  if (file) {
+    return { kind: 'file', src: file, poster: '' };
+  }
+
+  const youtubeId = extractYouTubeId(external);
+  if (youtubeId) {
+    const params = new URLSearchParams({
+      rel: '0',
+      modestbranding: '1',
+      playsinline: '1',
+    });
+    if (autoplay) params.set('autoplay', '1');
+    if (muted) params.set('mute', '1');
+    if (loop) {
+      params.set('loop', '1');
+      params.set('playlist', youtubeId);
+    }
+    return {
+      kind: 'embed',
+      src: `https://www.youtube.com/embed/${youtubeId}?${params.toString()}`,
+      poster: `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`,
+    };
+  }
+
+  const vimeoId = extractVimeoId(external);
+  if (vimeoId) {
+    const params = new URLSearchParams();
+    if (autoplay) params.set('autoplay', '1');
+    if (muted) params.set('muted', '1');
+    if (loop) params.set('loop', '1');
+    const qs = params.toString();
+    return {
+      kind: 'embed',
+      src: `https://player.vimeo.com/video/${vimeoId}${qs ? `?${qs}` : ''}`,
+      poster: '',
+    };
+  }
+
+  return { kind: 'file', src: normalizeMediaUrl(external) || external, poster: '' };
+}
+
 export async function fetchProjectCategories() {
   const json = await apiGet('/api/v1/project-categories');
-  return unwrapList(json);
+  return unwrapList(json).map((cat) => ({
+    ...cat,
+    video: cat?.video ? normalizeMediaUrl(cat.video) : cat?.video,
+  }));
 }
 
 export async function fetchProjects({ category, limit } = {}) {
@@ -193,6 +284,7 @@ export async function fetchProjectBySlug(slug) {
       ? project.gallery.map((img) => ({
           ...img,
           src: normalizeMediaUrl(img.src),
+          video: img?.video ? normalizeMediaUrl(img.video) : img?.video,
         }))
       : project.gallery,
   };

@@ -295,20 +295,123 @@ const LEADERSHIP_MEMBERS = [
   },
 ];
 
-/** Placeholder photos — swap these paths when ready */
-const TEAM_PHOTOS = [
-  { id: "photo-1", image: `${TEAM_IMG}/19.png`, alt: "AE3 team photo 1" },
-  { id: "photo-2", image: `${TEAM_IMG}/20.png`, alt: "AE3 team photo 2" },
-  { id: "photo-3", image: `${TEAM_IMG}/21.png`, alt: "AE3 team photo 3" },
-  { id: "photo-4", image: `${TEAM_IMG}/22.png`, alt: "AE3 team photo 4" },
-  { id: "photo-5", image: `${TEAM_IMG}/23.png`, alt: "AE3 team photo 5" },
-  { id: "photo-6", image: `${TEAM_IMG}/24.png`, alt: "AE3 team photo 6" },
-  { id: "photo-7", image: `${TEAM_IMG}/25.png`, alt: "AE3 team photo 7" },
-  { id: "photo-8", image: `${TEAM_IMG}/26.png`, alt: "AE3 team photo 8" },
-  { id: "photo-9", image: `${TEAM_IMG}/27.png`, alt: "AE3 team photo 9" },
-  { id: "photo-10", image: `${TEAM_IMG}/28.png`, alt: "AE3 team photo 10" },
-  { id: "photo-11", image: `${TEAM_IMG}/29.png`, alt: "AE3 team photo 11" },
+/** Group / studio life photos interleaved in the team mosaic */
+const TEAM_FEATURE_PHOTOS = [
+  {
+    id: "feature-1",
+    image: `${TEAM_IMG}/mosaic/aahrc-groundbreaking.jpg`,
+    alt: "AAHRC groundbreaking ceremony",
+  },
+  {
+    id: "feature-2",
+    image: `${TEAM_IMG}/mosaic/biome-visit.jpg`,
+    alt: "AE3 team at Biome visit",
+  },
+  {
+    id: "feature-3",
+    image: `${TEAM_IMG}/mosaic/oakland-office.jpg`,
+    alt: "AE3 Oakland office",
+  },
+  {
+    id: "feature-4",
+    image: `${TEAM_IMG}/mosaic/team-picnic.jpg`,
+    alt: "AE3 team picnic",
+  },
+  {
+    id: "feature-5",
+    image: `${TEAM_IMG}/mosaic/group-oak-iab.jpg`,
+    alt: "AE3 group at OAK IAB",
+  },
+  {
+    id: "feature-6",
+    image: `${TEAM_IMG}/mosaic/laccd-ribbon.jpg`,
+    alt: "LACCD WLAC Shops ribbon cutting ceremony",
+  },
+  {
+    id: "feature-7",
+    image: `${TEAM_IMG}/mosaic/merritt-cdc.jpg`,
+    alt: "Merritt CDC groundbreaking",
+  },
+  {
+    id: "feature-8",
+    image: `${TEAM_IMG}/mosaic/rick-antoinette.jpg`,
+    alt: "Rick and Antoinette at Sweet 16 event",
+  },
+  {
+    id: "feature-9",
+    image: `${TEAM_IMG}/mosaic/rick-doug.jpg`,
+    alt: "Rick and Doug at Sweet 16 event",
+  },
+  {
+    id: "feature-10",
+    image: `${TEAM_IMG}/mosaic/rick-team.jpg`,
+    alt: "Rick and team at Sweet 16 event",
+  },
+  {
+    id: "feature-11",
+    image: `${TEAM_IMG}/mosaic/team-oak-iab.jpg`,
+    alt: "AE3 team at OAK IAB project",
+  },
 ];
+
+/** Feature sliders alternate right → left → right → left → right (fills end blank) */
+const TEAM_FEATURE_SLIDERS = [
+  { side: "right", photos: TEAM_FEATURE_PHOTOS.slice(0, 2) },
+  { side: "left", photos: TEAM_FEATURE_PHOTOS.slice(2, 4) },
+  { side: "right", photos: TEAM_FEATURE_PHOTOS.slice(4, 6) },
+  { side: "left", photos: TEAM_FEATURE_PHOTOS.slice(6, 8) },
+  { side: "right", photos: TEAM_FEATURE_PHOTOS.slice(8) },
+];
+
+/**
+ * Mosaic ends with last headshots + right team photo (no blank cell).
+ * Alternating horizontal team photos: right, left, right, left, right.
+ */
+const TEAM_MOSAIC = (() => {
+  const items = [];
+  let m = 0;
+  let f = 0;
+
+  const pushMembers = (count) => {
+    for (let i = 0; i < count && m < KEY_TEAM_MEMBERS.length; i += 1, m += 1) {
+      items.push({
+        type: "member",
+        key: `member-${m}`,
+        member: KEY_TEAM_MEMBERS[m],
+      });
+    }
+  };
+
+  const pushFeature = () => {
+    if (f >= TEAM_FEATURE_SLIDERS.length) return;
+    const slot = TEAM_FEATURE_SLIDERS[f];
+    if (!slot.photos.length) return;
+    items.push({
+      type: "feature",
+      key: `feature-${f}`,
+      side: slot.side,
+      photos: slot.photos,
+    });
+    f += 1;
+  };
+
+  pushMembers(4);
+  pushMembers(2);
+  pushFeature(); // right
+  pushFeature(); // left
+  pushMembers(2);
+  pushMembers(4);
+  pushMembers(2);
+  pushFeature(); // right
+  pushFeature(); // left
+  pushMembers(2);
+  pushMembers(2);
+  pushFeature(); // right — fills blank beside last headshots
+
+  while (m < KEY_TEAM_MEMBERS.length) pushMembers(1);
+
+  return items;
+})();
 
 const JOB_OPENINGS = [
   {
@@ -369,7 +472,7 @@ const JOB_OPENINGS = [
 
 function TeamMemberCard({ member }) {
   return (
-    <div className="studio-team__card">
+    <article className="studio-team__card">
       <div className="studio-team__photo">
         <img
           src={member.image}
@@ -378,8 +481,122 @@ function TeamMemberCard({ member }) {
           decoding="async"
         />
       </div>
-      <h3 className="studio-team__name">{member.name}</h3>
-      <p className="studio-team__role">{member.title}</p>
+      <div className="studio-team__meta">
+        <h3 className="studio-team__name">{member.name}</h3>
+        <p className="studio-team__role">{member.title}</p>
+      </div>
+    </article>
+  );
+}
+
+function TeamFeatureSlider({ photos, sliderKey, side = "right" }) {
+  const swiperRef = useRef(null);
+
+  useEffect(() => {
+    const el = swiperRef.current;
+    if (!el || !photos?.length) return undefined;
+
+    let instance = null;
+    let retryTimer = 0;
+    let cancelled = false;
+
+    const destroy = () => {
+      if (!instance) return;
+      try {
+        instance.destroy(true, true);
+      } catch (_) {
+        /* ignore */
+      }
+      instance = null;
+    };
+
+    const init = () => {
+      if (cancelled) return;
+      if (typeof window.Swiper !== "function") {
+        retryTimer = window.setTimeout(init, 120);
+        return;
+      }
+
+      destroy();
+
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+
+      instance = new window.Swiper(el, {
+        slidesPerView: 1,
+        spaceBetween: 0,
+        loop: photos.length > 1,
+        speed: 600,
+        grabCursor: true,
+        watchOverflow: true,
+        observer: true,
+        observeParents: true,
+        autoplay: reduceMotion
+          ? false
+          : {
+              delay: 3200,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: true,
+            },
+        pagination: {
+          el: el.querySelector(".studio-team__feature-dots"),
+          clickable: true,
+          bulletClass: "studio-team__feature-dot",
+          bulletActiveClass: "is-active",
+        },
+      });
+
+      window.requestAnimationFrame(() => {
+        try {
+          instance?.update();
+        } catch (_) {
+          /* ignore */
+        }
+      });
+    };
+
+    ensureTemplateScriptsLoaded()
+      .then(() => {
+        if (!cancelled) init();
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(retryTimer);
+      destroy();
+    };
+  }, [photos, sliderKey]);
+
+  return (
+    <div
+      className={`studio-team__feature studio-team__feature--${side}`}
+    >
+      <div
+        className="studio-team__feature-swiper swiper"
+        ref={swiperRef}
+        aria-label="Team photos"
+      >
+        <div className="swiper-wrapper">
+          {photos.map((photo) => (
+            <div className="swiper-slide" key={photo.id}>
+              <figure className="studio-team__feature-slide">
+                <img
+                  src={photo.image}
+                  alt={photo.alt}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </figure>
+            </div>
+          ))}
+        </div>
+        <div
+          className="studio-team__feature-dots"
+          aria-label="Team photo slides"
+        />
+      </div>
     </div>
   );
 }
@@ -467,7 +684,6 @@ export default function Studio() {
   const leadershipSwiperRef = useRef(null);
   const [openWhy, setOpenWhy] = useState("");
   const [openCareer, setOpenCareer] = useState("senior-pm");
-  const [teamTab, setTeamTab] = useState("members");
 
   useLeadershipSwiper(leadershipSwiperRef);
 
@@ -606,7 +822,7 @@ export default function Studio() {
               <h2 className="studio-intro__heading studio-intro__heading--hero">
                 We love what we do.
               </h2>
-
+             
               <p className="studio-intro__tagline">
                 AE3 Partners is a full-service architecture, planning, and
                 construction management firm based in San Francisco, providing
@@ -763,15 +979,15 @@ export default function Studio() {
                             loading="lazy"
                             decoding="async"
                           />
-                        </div>
+                          </div>
                         <h3 className="studio-leadership__card-name">
                           {member.name}
                         </h3>
                         <p className="studio-leadership__card-role">
                           {member.title}
                         </p>
-                      </article>
-                    </div>
+                        </article>
+                      </div>
                   ))}
                 </div>
                 <div
@@ -796,139 +1012,22 @@ export default function Studio() {
                 in innovative ways, resulting in creative solutions that may not
                 have been considered otherwise.
               </p>
-
-              <div
-                className="studio-team__tabs"
-                role="tablist"
-                aria-label="Team views"
-              >
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={teamTab === "members"}
-                  className={`studio-team__tab${teamTab === "members" ? " is-active" : ""}`}
-                  onClick={() => setTeamTab("members")}
-                >
-                  <span className="studio-team__tab-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <circle
-                        cx="9"
-                        cy="8"
-                        r="3.2"
-                        stroke="currentColor"
-                        strokeWidth="1.7"
-                      />
-                      <circle
-                        cx="16.5"
-                        cy="9"
-                        r="2.4"
-                        stroke="currentColor"
-                        strokeWidth="1.7"
-                      />
-                      <path
-                        d="M3.5 18.5c.6-2.8 2.8-4.4 5.5-4.4s4.9 1.6 5.5 4.4"
-                        stroke="currentColor"
-                        strokeWidth="1.7"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d="M14.2 14.6c1.5-.6 3.2-.4 4.6.8.8.7 1.3 1.6 1.5 2.6"
-                        stroke="currentColor"
-                        strokeWidth="1.7"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </span>
-                  <span className="studio-team__tab-label">Team Members</span>
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={teamTab === "photos"}
-                  className={`studio-team__tab${teamTab === "photos" ? " is-active" : ""}`}
-                  onClick={() => setTeamTab("photos")}
-                >
-                  <span className="studio-team__tab-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <rect
-                        x="3.5"
-                        y="5.5"
-                        width="17"
-                        height="13"
-                        rx="2"
-                        stroke="currentColor"
-                        strokeWidth="1.7"
-                      />
-                      <circle
-                        cx="9"
-                        cy="11"
-                        r="2"
-                        stroke="currentColor"
-                        strokeWidth="1.7"
-                      />
-                      <path
-                        d="M12.5 14.5 15 12l3.5 4.5H7.5l2.2-2.8 2.8 2.8z"
-                        fill="currentColor"
-                      />
-                    </svg>
-                  </span>
-                  <span className="studio-team__tab-label">Team Photos</span>
-                </button>
-              </div>
             </div>
 
-            {teamTab === "members" ? (
-              <div
-                className="studio-team__grid"
-                role="tabpanel"
-                aria-label="Team members"
-              >
-                {KEY_TEAM_MEMBERS.map((member) => (
-                  <TeamMemberCard key={member.name} member={member} />
-                ))}
-              </div>
-            ) : (
-              <div
-                className="studio-team__photos"
-                role="tabpanel"
-                aria-label="Team photos"
-              >
-                {TEAM_PHOTOS.map((photo) => (
-                  <figure key={photo.id} className="studio-team__photo-card">
-                    <img
-                      src={photo.image}
-                      alt={photo.alt}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </figure>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section
-            className="studio-headshots"
-            aria-label="Leadership Headshots"
-          >
-            <div className="studio-headshots__head">
-              <p className="studio-headshots__eyebrow">AE3 Leadership</p>
-              <h2 className="studio-headshots__heading">
-                Leadership Headshots
-              </h2>
-              <p className="studio-headshots__lead">
-                Portraits and moments that capture the people leading AE3 from
-                studio life to the communities we serve.
-              </p>
+            <div className="studio-team__mosaic" aria-label="Team mosaic">
+              {TEAM_MOSAIC.map((item) =>
+                item.type === "feature" ? (
+                  <TeamFeatureSlider
+                    key={item.key}
+                    sliderKey={item.key}
+                    side={item.side}
+                    photos={item.photos}
+                  />
+                ) : (
+                  <TeamMemberCard key={item.key} member={item.member} />
+                ),
+              )}
             </div>
-            <figure className="studio-headshots__media">
-              <img
-                src={`${P}/assets/newimages/leadership-headshots.jpg`}
-                alt="AE3 leadership team headshots and studio moments collage"
-                loading="lazy"
-                decoding="async"
-              />
-            </figure>
           </section>
 
           <section className="studio-why" aria-label="Why Choose AE3">

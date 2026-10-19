@@ -372,6 +372,12 @@
   border: 0;
 }
 
+.projects-page .pp-featured-video__embed {
+  height: clamp(280px, 52vh, 620px);
+  max-height: 72vh;
+  background: #0d1520;
+}
+
 .projects-page .pp-featured-video__sound {
   position: absolute;
   right: clamp(14px, 2.5vw, 28px);
