@@ -13,9 +13,27 @@ function parseConfiguredHost(raw) {
     const url = new URL(withScheme);
     const host = url.hostname.replace(/^www\./i, '');
     const prefersWww = /^www\./i.test(url.hostname);
-    return { host, prefersWww };
+    const port = url.port || '';
+    const isLocal =
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host.endsWith('.local');
+    return {
+      host,
+      prefersWww: isLocal ? false : prefersWww,
+      port,
+      isLocal,
+      // Prefer the env protocol for local backends (e.g. http://localhost:8000).
+      preferredProtocol: isLocal ? url.protocol : null,
+    };
   } catch (_) {
-    return { host: DEFAULT_API_HOST, prefersWww: false };
+    return {
+      host: DEFAULT_API_HOST,
+      prefersWww: false,
+      port: '',
+      isLocal: false,
+      preferredProtocol: null,
+    };
   }
 }
 
@@ -24,23 +42,29 @@ function pageProtocol() {
   return window.location.protocol === 'https:' ? 'https:' : 'http:';
 }
 
-function buildApiOrigin(host, withWww, protocol) {
+function buildApiOrigin(host, withWww, protocol, port = '') {
   const hostname = withWww ? `www.${host}` : host;
-  return `${protocol}//${hostname}`;
+  const portPart = port ? `:${port}` : '';
+  return `${protocol}//${hostname}${portPart}`;
 }
 
-/** Candidate API origins: current page protocol × www/non-www. */
+/** Candidate API origins: current page protocol × www/non-www (port preserved). */
 export function getApiOriginCandidates() {
-  const { host, prefersWww } = parseConfiguredHost(process.env.REACT_APP_API_URL);
-  const protocol = pageProtocol();
+  const { host, prefersWww, port, isLocal, preferredProtocol } = parseConfiguredHost(
+    process.env.REACT_APP_API_URL
+  );
+  const protocol = preferredProtocol || pageProtocol();
   const ordered = [
-    buildApiOrigin(host, prefersWww, protocol),
-    buildApiOrigin(host, !prefersWww, protocol),
+    buildApiOrigin(host, prefersWww, protocol, port),
   ];
+  if (!isLocal) {
+    ordered.push(buildApiOrigin(host, !prefersWww, protocol, port));
+  }
   // On HTTP pages, HTTPS API is still fine (upgrade). Never call HTTP API from HTTPS pages.
-  if (protocol === 'http:') {
-    ordered.push(buildApiOrigin(host, prefersWww, 'https:'));
-    ordered.push(buildApiOrigin(host, !prefersWww, 'https:'));
+  // Skip protocol flipping for local backends that usually only speak HTTP.
+  if (!isLocal && protocol === 'http:') {
+    ordered.push(buildApiOrigin(host, prefersWww, 'https:', port));
+    ordered.push(buildApiOrigin(host, !prefersWww, 'https:', port));
   }
   return [...new Set(ordered)];
 }
@@ -66,12 +90,21 @@ export async function resolveApiBaseUrl() {
           controller && typeof window !== 'undefined'
             ? window.setTimeout(() => controller.abort(), 4500)
             : 0;
-        const res = await fetch(`${base}/api/v1/project-categories`, {
-          headers: { Accept: 'application/json' },
-          signal: controller ? controller.signal : undefined,
-        });
+        // Probe either projects or CMS home — both confirm a live Laravel API.
+        const probePaths = ['/api/v1/project-categories', '/api/v1/home'];
+        let ok = false;
+        for (const probe of probePaths) {
+          const res = await fetch(`${base}${probe}`, {
+            headers: { Accept: 'application/json' },
+            signal: controller ? controller.signal : undefined,
+          });
+          if (res.ok) {
+            ok = true;
+            break;
+          }
+        }
         if (timer) window.clearTimeout(timer);
-        if (res.ok) {
+        if (ok) {
           cachedApiBase = base;
           return base;
         }
@@ -98,18 +131,19 @@ export function getApiBaseUrl() {
 
 /**
  * Rewrite media URLs to match the page protocol (fixes mixed-content on HTTPS).
- * Keeps host as returned by API (www or non-www).
+ * Keeps local /storage/ URLs as-is so synced files load from Laravel.
+ * Use storageFallbackUrl() / mediaSrcChain() when a remote backup host is configured.
+ * Set REACT_APP_STORAGE_FALLBACK_URL=https://ae3partnersadmin.testdemolink.com
  */
 export function normalizeMediaUrl(url) {
   if (!url || typeof url !== 'string') return url;
   try {
     const absolute = /^https?:\/\//i.test(url)
       ? url
-      : `${getApiBaseUrl()}${url.startsWith('/') ? '' : '/'}${url}`;
+      : getApiBaseUrl() + (url.startsWith('/') ? '' : '/') + url;
     const parsed = new URL(absolute);
     if (typeof window !== 'undefined') {
       parsed.protocol = window.location.protocol === 'https:' ? 'https:' : parsed.protocol;
-      // If page is HTTPS, always force HTTPS on media
       if (window.location.protocol === 'https:') {
         parsed.protocol = 'https:';
       }
@@ -117,10 +151,46 @@ export function normalizeMediaUrl(url) {
     return parsed.toString();
   } catch (_) {
     if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-      return url.replace(/^http:\/\//i, 'https://');
+      return url.replace(/^http:\/\//i, 'https:');
     }
     return url;
   }
+}
+
+/** Remote mirror of a local /storage/... URL (or null if not applicable). */
+export function storageFallbackUrl(url) {
+  if (!url || typeof url !== 'string') return null;
+  const fallbackRaw = String(process.env.REACT_APP_STORAGE_FALLBACK_URL || '').trim();
+  if (!fallbackRaw) return null;
+  try {
+    const absolute = /^https?:\/\//i.test(url)
+      ? url
+      : getApiBaseUrl() + (url.startsWith('/') ? '' : '/') + url;
+    const parsed = new URL(absolute);
+    const isLocalHost =
+      parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1';
+    if (!isLocalHost || !parsed.pathname.startsWith('/storage/')) return null;
+    const fallback = new URL(
+      /^https?:\/\//i.test(fallbackRaw) ? fallbackRaw : 'https://' + fallbackRaw
+    );
+    parsed.protocol = fallback.protocol;
+    parsed.host = fallback.host;
+    return parsed.toString();
+  } catch (_) {
+    return null;
+  }
+}
+
+/** Deduped src list: primaries + remote storage mirrors + extras. */
+export function mediaSrcChain(...urls) {
+  const list = [];
+  urls.flat().forEach((u) => {
+    if (typeof u !== 'string' || !u) return;
+    if (!list.includes(u)) list.push(u);
+    const remote = storageFallbackUrl(u);
+    if (remote && !list.includes(remote)) list.push(remote);
+  });
+  return list;
 }
 
 function normalizeProject(item) {

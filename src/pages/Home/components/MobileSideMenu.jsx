@@ -8,7 +8,7 @@ const LOGO_SRC = `${P}/assets/newimages/ae3-logo.png`;
 const NAV_ITEMS = [
   { to: '/expertise', label: 'Expertise', match: '/expertise' },
   { to: '/projects', label: 'Work', match: '/projects' },
-  { to: '/studio', label: 'Studio', match: '/studio' },
+  { to: '/our-firm', label: 'Our Firm', match: '/our-firm' },
   { to: '/insights', label: 'Insights', match: '/insights' },
   { to: '/contact', label: 'Contact Us', match: '/contact' },
 ];

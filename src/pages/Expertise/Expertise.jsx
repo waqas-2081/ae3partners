@@ -1,4 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { fetchExpertiseContent, normalizeAppPath } from '../../api/cmsApi';
+import useSiteSettings from '../../hooks/useSiteSettings';
 import Header from '../Home/components/Header';
 import MobileSideMenu from '../Home/components/MobileSideMenu';
 import SiteFooter from '../../components/SiteFooter/SiteFooter';
@@ -7,7 +10,6 @@ import './Expertise.css';
 
 const P = process.env.PUBLIC_URL || '';
 const IMG = `${P}/assets/newimages/expertise`;
-const G = `${P}/assets/newimages/review`;
 
 const SERVICES = [
   {
@@ -61,8 +63,6 @@ const TESTIMONIALS = [
     role: 'CEO @ SCLARC',
     quote:
       'They took the time to not only listen and understand our needs, but the needs of our clients and stakeholders.',
-    image: `${G}/1.png`,
-    sideImage: `${G}/side1.png`,
   },
   {
     id: 'traci',
@@ -72,8 +72,6 @@ const TESTIMONIALS = [
     role: 'Director of Asset Management @ St. Anthony Foundation',
     quote:
       'The AE3 team was informed and current with up-to-date industry standards, have creative ideas and a wealth of past accomplishments that enabled them to bring savvy and money saving ideas to the table.',
-    image: `${G}/2.png`,
-    sideImage: `${G}/side2.png`,
   },
   {
     id: 'chris',
@@ -83,8 +81,6 @@ const TESTIMONIALS = [
     role: 'CEO @ Lincoln Child Center',
     quote:
       'We loved the approach they took, engaging our team and ensuring that each component of our programs was addressed in the design.',
-    image: `${G}/3.png`,
-    sideImage: `${G}/side3.png`,
   },
   {
     id: 'kevin',
@@ -94,8 +90,6 @@ const TESTIMONIALS = [
     role: 'Corporate Real Estate @ Patelco Credit Union',
     quote:
       "Their team's expertise and willingness to adapt to our unique needs and requirements have made them a valuable partner in our growth and success.",
-    image: `${G}/4.png`,
-    sideImage: `${G}/side4.png`,
   },
   {
     id: 'charles',
@@ -105,8 +99,6 @@ const TESTIMONIALS = [
     role: 'School Board President Emeritus @ West Contra Costa Unified School District',
     quote:
       'We found AE3 Partners to be a reliable and capable partner on this project that resolved numerous challenges inherent in renovation projects.',
-    image: `${G}/5.png`,
-    sideImage: `${G}/side5.png`,
   },
 ];
 
@@ -115,6 +107,53 @@ export default function Expertise() {
   const [reviewIndex, setReviewIndex] = useState(0);
   const [perView, setPerView] = useState(3);
   const [paused, setPaused] = useState(false);
+  const [cms, setCms] = useState(null);
+  const { contact } = useSiteSettings();
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchExpertiseContent()
+      .then((data) => {
+        if (!cancelled) setCms(data || null);
+      })
+      .catch(() => {
+        if (!cancelled) setCms(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const services = useMemo(() => {
+    const items = cms?.services?.items;
+    if (!Array.isArray(items) || !items.length) return SERVICES;
+    return items.map((item, index) => ({
+      id: item.anchor || `service-${index}`,
+      n: item.number || String(index + 1).padStart(2, '0'),
+      label: item.label,
+      title: item.title,
+      body: item.body,
+      image: item.image || SERVICES[index]?.image || '',
+      href: normalizeAppPath(item.button_link || '/contact') || '/contact',
+      buttonText: item.button_text || 'Get in Touch',
+    }));
+  }, [cms]);
+
+  const testimonials = useMemo(() => {
+    const items = cms?.reviews?.items;
+    if (!Array.isArray(items) || !items.length) return TESTIMONIALS;
+    return items.map((item, index) => ({
+      id: `${item.name || 'review'}-${index}`,
+      label: item.label || 'Client Voice',
+      place: item.place,
+      name: item.name,
+      role: item.role,
+      quote: item.quote,
+    }));
+  }, [cms]);
+
+  const servicesMeta = cms?.services || {};
+  const reviewsMeta = cms?.reviews || {};
 
   useEffect(() => {
     if ('scrollRestoration' in window.history) {
@@ -139,7 +178,7 @@ export default function Expertise() {
     return () => window.removeEventListener('resize', sync);
   }, []);
 
-  const maxIndex = Math.max(0, TESTIMONIALS.length - perView);
+  const maxIndex = Math.max(0, testimonials.length - perView);
 
   useEffect(() => {
     setReviewIndex((i) => Math.min(i, maxIndex));
@@ -249,7 +288,7 @@ export default function Expertise() {
       cancelled = true;
       observer.disconnect();
     };
-  }, []);
+  }, [services]);
 
   return (
     <>
@@ -260,18 +299,26 @@ export default function Expertise() {
         <div id="app-content" className="studio-reveal-content">
           <section className="expertise-services" aria-label="Our Services">
             <div className="expertise-services__intro">
-              <p className="expertise-services__eyebrow">What We Deliver</p>
-              <h2 className="expertise-services__heading">Our Services</h2>
+              <p className="expertise-services__eyebrow">
+                {servicesMeta.eyebrow || 'What We Deliver'}
+              </p>
+              <h2 className="expertise-services__heading">
+                {servicesMeta.heading || 'Our Services'}
+              </h2>
               <p className="expertise-services__lead">
-                AE3 serves a diverse range of clients through Architecture, Construction Management,
-                Sustainable Design, and Real Estate Development, with core expertise in Civic,
-                Commercial, Education, Transportation, and Federal sectors.
+                {servicesMeta.lead ||
+                  'AE3 serves a diverse range of clients through Architecture, Construction Management, Sustainable Design, and Real Estate Development, with core expertise in Civic, Commercial, Education, Transportation, and Federal sectors.'}
               </p>
             </div>
 
             <div className="expertise-services__list">
-              {SERVICES.map((service, index) => {
+              {services.map((service, index) => {
                 const reversed = index % 2 === 1;
+                const isInternal = service.href.startsWith('/');
+                const Cta = isInternal ? Link : 'a';
+                const ctaProps = isInternal
+                  ? { to: service.href }
+                  : { href: service.href };
                 return (
                   <article
                     key={service.id}
@@ -291,8 +338,8 @@ export default function Expertise() {
                       </div>
                       <h3 className="expertise-row__title">{service.title}</h3>
                       <p className="expertise-row__body">{service.body}</p>
-                      <a className="expertise-row__btn" href={service.href}>
-                        <span>Get in Touch</span>
+                      <Cta className="expertise-row__btn" {...ctaProps}>
+                        <span>{service.buttonText || 'Get in Touch'}</span>
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                           <path
                             d="M3 8h10M9 4l4 4-4 4"
@@ -302,7 +349,7 @@ export default function Expertise() {
                             strokeLinejoin="round"
                           />
                         </svg>
-                      </a>
+                      </Cta>
                     </div>
                     <figure className="expertise-row__media">
                       <div className="expertise-row__media-frame">
@@ -318,14 +365,16 @@ export default function Expertise() {
           <section className="expertise-reviews" aria-label="Client testimonials">
             <div className="expertise-reviews__inner">
               <div className="expertise-reviews__intro">
-                <p className="expertise-reviews__eyebrow">Testimonials</p>
+                <p className="expertise-reviews__eyebrow">
+                  {reviewsMeta.eyebrow || 'Testimonials'}
+                </p>
                 <h2 className="expertise-reviews__heading">
-                  What Our <span>Clients Say</span>
+                  {reviewsMeta.heading || 'What Our'}{' '}
+                  <span>{reviewsMeta.heading_accent || 'Clients Say'}</span>
                 </h2>
                 <p className="expertise-reviews__lead">
-                  Our work speaks through the experiences of the people we build for. From developers
-                  to foundations, our clients trust AE3 to deliver quality design, creative solutions,
-                  and lasting value on every project.
+                  {reviewsMeta.lead ||
+                    'Our work speaks through the experiences of the people we build for. From developers to foundations, our clients trust AE3 to deliver quality design, creative solutions, and lasting value on every project.'}
                 </p>
               </div>
 
@@ -341,7 +390,7 @@ export default function Expertise() {
                     '--per-view': perView,
                   }}
                 >
-                  {TESTIMONIALS.map((item, index) => (
+                  {testimonials.map((item, index) => (
                     <article
                       key={item.id}
                       className={`expertise-reviews__card expertise-reviews__card--${(index % 5) + 1}`}
@@ -384,7 +433,7 @@ export default function Expertise() {
                 </h2>
               </div>
               <div className="expertise-cta__contacts">
-                <a className="expertise-cta__link" href="tel:+14152339991">
+                <a className="expertise-cta__link" href={contact.phone_href || 'tel:+14152339991'}>
                   <span className="expertise-cta__icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8">
                       <path d="M5 4h4l2 4-2 2a12 12 0 006 6l2-2 4 2v4a2 2 0 01-2 2A18 18 0 013 5a2 2 0 012-1z" />
@@ -392,10 +441,12 @@ export default function Expertise() {
                   </span>
                   <span className="expertise-cta__meta">
                     <span className="expertise-cta__label">Call us</span>
-                    <span className="expertise-cta__value">(415) 233 – 9991</span>
+                    <span className="expertise-cta__value">
+                      {contact.phone || '(415) 233 – 9991'}
+                    </span>
                   </span>
                 </a>
-                <a className="expertise-cta__link" href="mailto:info@ae3partners.com">
+                <a className="expertise-cta__link" href={contact.email_href || 'mailto:info@ae3partners.com'}>
                   <span className="expertise-cta__icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8">
                       <rect x="3" y="5" width="18" height="14" rx="2" />
@@ -404,7 +455,9 @@ export default function Expertise() {
                   </span>
                   <span className="expertise-cta__meta">
                     <span className="expertise-cta__label">Email us</span>
-                    <span className="expertise-cta__value">info@ae3partners.com</span>
+                    <span className="expertise-cta__value">
+                      {contact.email || 'info@ae3partners.com'}
+                    </span>
                   </span>
                 </a>
               </div>

@@ -22,25 +22,44 @@ const PARTNER_FILES = [
   'partner17.png',
   'partner18.jpg',
   'partner19.png',
-  'partner20.png'
+  'partner20.png',
 ];
 
-export default function SponsorSection() {
+export default function SponsorSection({ data }) {
+  const logos =
+    Array.isArray(data?.items) && data.items.length
+      ? data.items
+          .map((item, index) => ({
+            key: item.image || `logo-${index}`,
+            src: item.image,
+          }))
+          .filter((item) => item.src)
+      : PARTNER_FILES.map((img) => ({
+          key: img,
+          src: `${P}/assets/newimages/${img}`,
+        }));
+
+  const prefix = data?.prefix || 'Trusted by';
+  const highlight = data?.highlight || '140';
+  const suffix = data?.suffix || '+ clients across California';
+
   return (
     <section className="sponsor-section sponsor-1 bg-grey pt-120 pb-40 overflow-hidden">
       <div className="container">
         <div className="sponsor-text-wrap">
           <h5 className="sponsor-text">
-            Trusted by&nbsp;<span>140</span>+&nbsp;clients across California
+            {prefix}&nbsp;<span>{highlight}</span>
+            {suffix.startsWith('+') || suffix.startsWith(' ') ? '' : ' '}
+            {suffix}
           </h5>
         </div>
         <div className="sponsor-carousel swiper">
           <div className="swiper-wrapper">
-            {PARTNER_FILES.map((img) => (
-              <div className="swiper-slide" key={img}>
+            {logos.map((logo) => (
+              <div className="swiper-slide" key={logo.key}>
                 <div className="sponsor-item">
                   <a href="/" onClick={(e) => e.preventDefault()}>
-                    <img src={`${P}/assets/newimages/${img}`} alt="" />
+                    <img src={logo.src} alt="" />
                   </a>
                 </div>
               </div>
@@ -51,4 +70,3 @@ export default function SponsorSection() {
     </section>
   );
 }
-

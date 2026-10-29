@@ -38,8 +38,8 @@ export default function Header() {
                     <li className={pathname.startsWith('/projects') ? 'active' : ''}>
                       <Link to="/projects">Work</Link>
                     </li>
-                    <li className={pathname.startsWith('/studio') ? 'active' : ''}>
-                      <Link to="/studio">Studio</Link>
+                    <li className={pathname.startsWith('/our-firm') ? 'active' : ''}>
+                      <Link to="/our-firm">Our Firm</Link>
                     </li>
                 
                     <li className={pathname.startsWith('/insights') ? 'active' : ''}>

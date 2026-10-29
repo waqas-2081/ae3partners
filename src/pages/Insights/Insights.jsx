@@ -1,18 +1,31 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { fetchBlogs } from '../../api/cmsApi';
 import Header from '../Home/components/Header';
 import MobileSideMenu from '../Home/components/MobileSideMenu';
 import SiteFooter from '../../components/SiteFooter/SiteFooter';
 import GallerySection from '../Home/sections/GallerySection';
 import '../Studio/Studio.css';
-import { ARTICLES, INSIGHTS_IMG } from './insightsData';
+import { ARTICLES } from './insightsData';
 import './Insights.css';
 
-const P = process.env.PUBLIC_URL || '';
+function toCard(article) {
+  return {
+    id: article.slug || article.id,
+    slug: article.slug || article.id,
+    title: article.title,
+    excerpt: article.excerpt,
+    date: article.date,
+    image: article.image,
+    category: article.category,
+  };
+}
 
 export default function Insights() {
+  const [articles, setArticles] = useState(ARTICLES.map(toCard));
   const [featuredIndex, setFeaturedIndex] = useState(0);
-  const featured = ARTICLES[featuredIndex];
+  const [loading, setLoading] = useState(true);
+  const featured = articles[featuredIndex] || articles[0];
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -22,13 +35,52 @@ export default function Insights() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetchBlogs()
+      .then((list) => {
+        if (cancelled) return;
+        if (list.length) {
+          setArticles(list.map(toCard));
+          setFeaturedIndex(0);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setArticles(ARTICLES.map(toCard));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const goPrev = () => {
-    setFeaturedIndex((i) => (i === 0 ? ARTICLES.length - 1 : i - 1));
+    setFeaturedIndex((i) => (i === 0 ? articles.length - 1 : i - 1));
   };
 
   const goNext = () => {
-    setFeaturedIndex((i) => (i === ARTICLES.length - 1 ? 0 : i + 1));
+    setFeaturedIndex((i) => (i === articles.length - 1 ? 0 : i + 1));
   };
+
+  if (!featured) {
+    return (
+      <>
+        <Header />
+        <MobileSideMenu />
+        <div id="app-wrapper" className="insights-page studio-page">
+          <div id="app-content" className="studio-reveal-content">
+            <p style={{ padding: '6rem 1.5rem' }}>
+              {loading ? 'Loading insights…' : 'No insights published yet.'}
+            </p>
+          </div>
+          <SiteFooter />
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -39,8 +91,8 @@ export default function Insights() {
         <div id="app-content" className="studio-reveal-content">
           <section className="insights-featured" aria-label="Featured insight">
             <div className="insights-featured__media">
-              <Link to={`/insights/${featured.id}`}>
-                <img src={featured.image} alt="" key={featured.id} />
+              <Link to={`/insights/${featured.slug}`}>
+                <img src={featured.image} alt="" key={featured.slug} />
               </Link>
             </div>
 
@@ -60,10 +112,10 @@ export default function Insights() {
 
               <p className="insights-featured__date">{featured.date}</p>
               <h1 className="insights-featured__title">
-                <Link to={`/insights/${featured.id}`}>{featured.title}</Link>
+                <Link to={`/insights/${featured.slug}`}>{featured.title}</Link>
               </h1>
               <p className="insights-featured__excerpt">{featured.excerpt}</p>
-              <Link className="insights-readmore" to={`/insights/${featured.id}`}>
+              <Link className="insights-readmore" to={`/insights/${featured.slug}`}>
                 <span>Read More</span>
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                   <path d="M6 9l6 6 6-6" />
@@ -74,17 +126,17 @@ export default function Insights() {
 
           <section className="insights-grid-section" aria-label="Latest articles">
             <div className="insights-grid">
-              {ARTICLES.map((article) => (
-                <article key={article.id} className="insights-card">
-                  <Link className="insights-card__media" to={`/insights/${article.id}`}>
+              {articles.map((article) => (
+                <article key={article.slug} className="insights-card">
+                  <Link className="insights-card__media" to={`/insights/${article.slug}`}>
                     <img src={article.image} alt="" loading="lazy" />
                   </Link>
                   <p className="insights-card__date">{article.date}</p>
                   <h2 className="insights-card__title">
-                    <Link to={`/insights/${article.id}`}>{article.title}</Link>
+                    <Link to={`/insights/${article.slug}`}>{article.title}</Link>
                   </h2>
                   <p className="insights-card__excerpt">{article.excerpt}</p>
-                  <Link className="insights-readmore" to={`/insights/${article.id}`}>
+                  <Link className="insights-readmore" to={`/insights/${article.slug}`}>
                     <span>Read More</span>
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                       <path d="M6 9l6 6 6-6" />

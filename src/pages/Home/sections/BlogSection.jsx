@@ -1,27 +1,61 @@
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { fetchBlogs } from '../../../api/cmsApi';
 import './BlogSection.css';
 
 const P = process.env.PUBLIC_URL || '';
 
-const POSTS = [
+const FALLBACK_POSTS = [
   {
-    img: `${P}/assets/newimages/blog1.jpg`,
-    key: 'blog1.jpg',
+    slug: 'wlac',
+    image: `${P}/assets/newimages/blog1.jpg`,
     title: 'Building the Future: WLAC Kicks Off Construction of New Facilities & Shops Complex',
+    date: 'Dec 19, 2025',
+    category: 'Education',
   },
   {
-    img: `${P}/assets/newimages/blog2.jpg`,
-    key: 'blog2.jpg',
+    slug: 'liberation-park',
+    image: `${P}/assets/newimages/blog2.jpg`,
     title: 'Liberation Park Project Takes Shape in East Oakland: A New Hub for Community Empowerment',
+    date: 'Dec 19, 2025',
+    category: 'Projects',
   },
   {
-    img: `${P}/assets/newimages/blog3.jpg`,
-    key: 'blog3.jpg',
+    slug: 'lawa',
+    image: `${P}/assets/newimages/blog3.jpg`,
     title:
       'AE3 Partners and Steinberg Hart Collaborate with LAWA to Enhance Traveler Experience Ahead of the Los Angeles Olympics',
+    date: 'Dec 19, 2025',
+    category: 'Transportation',
   },
 ];
 
 export default function BlogSection() {
+  const [posts, setPosts] = useState(FALLBACK_POSTS);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchBlogs({ limit: 6 })
+      .then((list) => {
+        if (cancelled || !list.length) return;
+        setPosts(
+          list.map((item) => ({
+            slug: item.slug,
+            image: item.image,
+            title: item.title,
+            date: item.date,
+            category: item.category || 'News',
+          }))
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setPosts(FALLBACK_POSTS);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <section className="ae3-blog blog-section pt-30 fade-wrapper tl-bg-color">
       <div className="container container-2">
@@ -53,24 +87,24 @@ export default function BlogSection() {
 
         <div className="blog-carousel swiper fade-top">
           <div className="swiper-wrapper">
-            {POSTS.map((p) => (
-              <div className="swiper-slide" key={p.key}>
+            {posts.map((p) => (
+              <div className="swiper-slide" key={p.slug || p.title}>
                 <div className="post-card">
                   <div className="post-thumb">
-                    <img src={p.img} alt={p.title} />
-                    <span className="category">news</span>
+                    <Link to={p.slug ? `/insights/${p.slug}` : '/insights'}>
+                      <img src={p.image} alt={p.title} />
+                    </Link>
+                    <span className="category">{p.category || 'news'}</span>
                   </div>
                   <div className="post-content">
                     <ul className="post-meta">
-                      <li>Dec 19, 2025</li>
+                      <li>{p.date || '—'}</li>
                       <li>
                         By <span>AE3 Partners</span>
                       </li>
                     </ul>
                     <h3 className="title">
-                      <a href="/" onClick={(e) => e.preventDefault()}>
-                        {p.title}
-                      </a>
+                      <Link to={p.slug ? `/insights/${p.slug}` : '/insights'}>{p.title}</Link>
                     </h3>
                   </div>
                 </div>

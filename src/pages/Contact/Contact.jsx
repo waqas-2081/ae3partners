@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { fetchContactContent } from '../../api/cmsApi';
+import useSiteSettings from '../../hooks/useSiteSettings';
 import Header from '../Home/components/Header';
 import MobileSideMenu from '../Home/components/MobileSideMenu';
 import SiteFooter from '../../components/SiteFooter/SiteFooter';
@@ -65,6 +67,8 @@ const OFFICES = [
 export default function Contact() {
   const [slide, setSlide] = useState(0);
   const [status, setStatus] = useState('idle');
+  const [cms, setCms] = useState(null);
+  const { contact } = useSiteSettings();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -73,6 +77,48 @@ export default function Contact() {
       document.documentElement.classList.remove('studio-route');
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchContactContent()
+      .then((data) => {
+        if (!cancelled) setCms(data || null);
+      })
+      .catch(() => {
+        if (!cancelled) setCms(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const offices = useMemo(() => {
+    const items = cms?.offices?.items;
+    if (!Array.isArray(items) || !items.length) {
+      return OFFICES.map((office) => ({
+        ...office,
+        addressLines: office.address.split('\n'),
+      }));
+    }
+    return items.map((item) => ({
+      id: item.id || item.city,
+      city: item.city,
+      addressLines:
+        Array.isArray(item.address_lines) && item.address_lines.length
+          ? item.address_lines
+          : String(item.address || '')
+              .split(/\r?\n/)
+              .map((line) => line.trim())
+              .filter(Boolean),
+      phone: item.phone,
+      phoneHref: item.phone_href || item.phoneHref,
+      email: item.email,
+      image: item.image,
+      mapUrl: item.map_url || item.mapUrl,
+    }));
+  }, [cms]);
+
+  const officesMeta = cms?.offices || {};
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -118,24 +164,24 @@ export default function Contact() {
                   <p className="contact-card__prompt">Prefer to reach out directly?</p>
                   <ul className="contact-card__links">
                     <li>
-                      <a href="tel:+14152339991">
+                      <a href={contact.phone_href || 'tel:+14152339991'}>
                         <span className="contact-card__icon" aria-hidden="true">
                           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8">
                             <path d="M5 4h4l2 4-2 2a12 12 0 006 6l2-2 4 2v4a2 2 0 01-2 2A18 18 0 013 5a2 2 0 012-1z" />
                           </svg>
                         </span>
-                        <span>(415) 233 – 9991</span>
+                        <span>{contact.phone || '(415) 233 – 9991'}</span>
                       </a>
                     </li>
                     <li>
-                      <a href="mailto:info@ae3partners.com">
+                      <a href={contact.email_href || 'mailto:info@ae3partners.com'}>
                         <span className="contact-card__icon" aria-hidden="true">
                           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8">
                             <rect x="3" y="5" width="18" height="14" rx="2" />
                             <path d="M3 7l9 6 9-6" />
                           </svg>
                         </span>
-                        <span>info@ae3partners.com</span>
+                        <span>{contact.email || 'info@ae3partners.com'}</span>
                       </a>
                     </li>
                   </ul>
@@ -224,14 +270,16 @@ export default function Contact() {
 
           <section className="contact-offices" aria-labelledby="offices-heading">
             <div className="contact-offices__intro">
-              <p className="contact-offices__eyebrow">Office Near You</p>
+              <p className="contact-offices__eyebrow">
+                {officesMeta.eyebrow || 'Office Near You'}
+              </p>
               <h2 id="offices-heading" className="contact-offices__heading">
-                Discover Our Presence
+                {officesMeta.heading || 'Discover Our Presence'}
               </h2>
             </div>
 
             <div className="contact-offices__list">
-              {OFFICES.map((office) => (
+              {offices.map((office) => (
                 <article key={office.id} className="contact-office">
                   <figure className="contact-office__media">
                     <img src={office.image} alt={`${office.city} office`} loading="lazy" />
@@ -248,7 +296,7 @@ export default function Contact() {
                     <div>
                       <h3 className="contact-office__label">Address</h3>
                       <p className="contact-office__text">
-                        {office.address.split('\n').map((line) => (
+                        {(office.addressLines || []).map((line) => (
                           <span key={line}>
                             {line}
                             <br />

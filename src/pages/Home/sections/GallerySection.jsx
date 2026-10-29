@@ -1,16 +1,12 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ensureTemplateScriptsLoaded } from '../../../template/loadTemplateScripts';
-import { fetchProjectBySlug } from '../../../api/projectsApi';
 import './GallerySection.css';
 
 const P = process.env.PUBLIC_URL || '';
 const IMG = `${P}/assets/newimages/gallery-ribbon`;
 
-/**
- * Fixed gallery list (same projects as before).
- * Images are replaced with each project's live admin / detail-page hero image.
- */
+/** Fixed local ribbon images — instant load, same as original gallery. */
 const GALLERY_PROJECTS = [
   {
     img: `${IMG}/college-of-alameda-aviation.png`,
@@ -48,34 +44,6 @@ const GALLERY_PROJECTS = [
     slug: 'sfo-terminal-2-gate-15-renovation-expansion-san-francisco-international-airport-Ix0L',
   },
 ];
-
-/** Same hero image the project detail page uses. */
-function detailHeroImage(project) {
-  if (!project) return '';
-  if (project.image) return project.image;
-  if (Array.isArray(project.gallery) && project.gallery[0]?.src) {
-    return project.gallery[0].src;
-  }
-  return '';
-}
-
-async function loadGalleryWithLiveImages() {
-  const results = await Promise.all(
-    GALLERY_PROJECTS.map(async (item) => {
-      try {
-        const project = await fetchProjectBySlug(item.slug);
-        const liveImg = detailHeroImage(project);
-        return {
-          ...item,
-          img: liveImg || item.img,
-        };
-      } catch (_) {
-        return item;
-      }
-    })
-  );
-  return results;
-}
 
 function GalleryItem({ item }) {
   return (
@@ -169,35 +137,18 @@ export default function GallerySection() {
   const rootRef = useRef(null);
   const mobileRef = useRef(null);
   const swiperRef = useRef(null);
-  // Wait for live detail-page images before mounting ribbons (avoids wrong local flash)
-  const [items, setItems] = useState(null);
+  const items = GALLERY_PROJECTS;
 
-  useEffect(() => {
-    let cancelled = false;
-
-    loadGalleryWithLiveImages()
-      .then((next) => {
-        if (!cancelled) setItems(next);
-      })
-      .catch(() => {
-        if (!cancelled) setItems(GALLERY_PROJECTS);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const row1 = useMemo(() => (items ? items.slice(0, 4) : []), [items]);
-  const row2 = useMemo(() => (items ? items.slice(4) : []), [items]);
+  const row1 = useMemo(() => items.slice(0, 4), [items]);
+  const row2 = useMemo(() => items.slice(4), [items]);
   const itemsKey = useMemo(
-    () => (items ? items.map((i) => `${i.slug}:${i.img}`).join('|') : ''),
+    () => items.map((i) => `${i.slug}:${i.img}`).join('|'),
     [items]
   );
 
   useLayoutEffect(() => {
     const root = rootRef.current;
-    if (!root || !items?.length) return;
+    if (!root || !items.length) return;
     root.querySelectorAll('.gallery-scroll-wrap').forEach((el) => {
       delete el.dataset.ae3OriginalHtml;
       el.dataset.ae3OriginalHtml = el.innerHTML;
@@ -205,7 +156,7 @@ export default function GallerySection() {
   }, [itemsKey, items]);
 
   useEffect(() => {
-    if (!items?.length) return undefined;
+    if (!items.length) return undefined;
 
     let cancelled = false;
     let resizeTimer = 0;
@@ -294,22 +245,6 @@ export default function GallerySection() {
       cleanupDesktop();
     };
   }, [itemsKey, items]);
-
-  if (!items) {
-    return (
-      <div className="ae3-gallery gallary-section overflow-hidden" aria-hidden="true">
-        <div className="container container-2">
-          <div className="row section-heading-wrap gallary-heading-wrap">
-            <div className="col-12">
-              <div className="section-heading mb-0">
-                <h4 className="sub-heading">Gallery</h4>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="ae3-gallery gallary-section overflow-hidden" ref={rootRef}>

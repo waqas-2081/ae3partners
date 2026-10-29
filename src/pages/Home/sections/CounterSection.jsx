@@ -133,8 +133,16 @@ function initOdometers(root) {
   return () => {};
 }
 
-export default function CounterSection() {
+export default function CounterSection({ data }) {
   const rootRef = useRef(null);
+  const items =
+    Array.isArray(data?.items) && data.items.length
+      ? data.items.map((item) => ({
+          count: item.count,
+          title: item.title,
+          text: item.text,
+        }))
+      : STATS;
 
   useLayoutEffect(() => {
     const root = rootRef.current;
@@ -161,7 +169,7 @@ export default function CounterSection() {
       cleanupScroll();
       cleanupOdo();
     };
-  }, []);
+  }, [items]);
 
   return (
     <section ref={rootRef} className="ae3-counter counter-section counter-1">
@@ -173,7 +181,7 @@ export default function CounterSection() {
       </div>
       <div className="container container-2">
         <div className="row gy-5 fade-wrapper">
-          {STATS.map((c) => (
+          {items.map((c) => (
             <div className="col-lg-3 col-md-6 fade-top" key={c.title}>
               <div className="counter-item">
                 <h3 className="title">

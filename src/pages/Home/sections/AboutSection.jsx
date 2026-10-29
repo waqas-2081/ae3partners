@@ -1,9 +1,31 @@
 import { Link } from 'react-router-dom';
+import { normalizeAppPath } from '../../../api/cmsApi';
 import './AboutSection.css';
 
 const P = process.env.PUBLIC_URL || '';
 
-export default function AboutSection() {
+const FALLBACK_POINTS = [
+  'Focused on your needs and outcomes',
+  'Timeless, attractive, and sustainable design',
+  'Delivering on budget and schedule',
+  'Collaborative, ego-free team approach',
+];
+
+export default function AboutSection({ data }) {
+  const subHeading = data?.sub_heading || 'Who We Are';
+  const title = data?.title || 'Trusted Advisors.';
+  const titleAccent = data?.title_accent || 'Proven Partners.';
+  const points =
+    Array.isArray(data?.points) && data.points.length
+      ? data.points.map((p) => p.label || p).filter(Boolean)
+      : FALLBACK_POINTS;
+  const description =
+    data?.description ||
+    'AE3 is an architecture firm providing planning and construction management services for public and private clients across California and beyond. We combine creative thinking, technical expertise, and responsive leadership to help clients achieve successful outcomes.';
+  const buttonText = data?.button_text || 'Our Team';
+  const buttonLink = normalizeAppPath(data?.button_link || '/our-firm') || '/our-firm';
+  const image = data?.image || `${P}/assets/newimages/whoweare2.jpg`;
+
   return (
     <section className="ae3-about about-section overflow-hidden">
       <div
@@ -31,33 +53,24 @@ export default function AboutSection() {
                   data-duration="0.9"
                   data-stagger="0.03"
                 >
-                  Who We Are
+                  {subHeading}
                 </h4>
                 <h2 className="section-title cursor-effect">
-                  Trusted Advisors. <span>Proven Partners.</span>
+                  {title} <span>{titleAccent}</span>
                 </h2>
               </div>
               <ul className="about-list">
-                {[
-                  'Focused on your needs and outcomes',
-                  'Timeless, attractive, and sustainable design',
-                  'Delivering on budget and schedule',
-                  'Collaborative, ego-free team approach'
-                ].map((label) => (
+                {points.map((label) => (
                   <li key={label}>
                     <img src={`${P}/assets/img/icon/about-1.png`} alt="" />
                     {label}
                   </li>
                 ))}
               </ul>
-              <p>
-                AE3 is an architecture firm providing planning and construction management services for public and
-                private clients across California and beyond. We combine creative thinking, technical expertise, and
-                responsive leadership to help clients achieve successful outcomes.
-              </p>
+              <p>{description}</p>
               <div className="about-btn">
-                <Link to="/studio" className="tl-primary-btn white-btn">
-                  Our Team{' '}
+                <Link to={buttonLink} className="tl-primary-btn white-btn">
+                  {buttonText}{' '}
                   <span className="icon">
                     <i className="fa-regular fa-arrow-right"></i>
                   </span>
@@ -72,7 +85,7 @@ export default function AboutSection() {
               data-offset="100"
               data-direction="right"
             >
-              <img src={`${P}/assets/newimages/whoweare2.jpg`} alt="AE3 Partners team and studio" />
+              <img src={image} alt="AE3 Partners team and firm" />
             </div>
           </div>
         </div>

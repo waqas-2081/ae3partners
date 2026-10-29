@@ -3,7 +3,7 @@ import ValuesMotif from '../components/ValuesMotif';
 
 const P = process.env.PUBLIC_URL || '';
 
-const quickLinks = ['Expertise', 'Work', 'Studio', 'Insights', 'Contact Us'];
+const quickLinks = ['Expertise', 'Work', 'Our Firm', 'Insights', 'Contact Us'];
 const serviceLinks = [
   'Architecture & Interior Design',
   'Construction Management',
@@ -111,7 +111,7 @@ export default function Footer() {
               </a>
             </div>
             <p>
-              Full-service architecture, planning, and construction management studio shaping visionary spaces across
+              Full-service architecture, planning, and construction management firm shaping visionary spaces across
               California with precision, purpose, and timeless style.
             </p>
           </div>

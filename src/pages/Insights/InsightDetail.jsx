@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
+import { fetchBlogBySlug } from '../../api/cmsApi';
 import Header from '../Home/components/Header';
 import MobileSideMenu from '../Home/components/MobileSideMenu';
 import SiteFooter from '../../components/SiteFooter/SiteFooter';
@@ -8,10 +9,17 @@ import '../Studio/Studio.css';
 import { getArticleById, getRelatedArticles } from './insightsData';
 import './InsightDetail.css';
 
+function isHtml(value) {
+  return typeof value === 'string' && /<\/?[a-z][\s\S]*>/i.test(value);
+}
+
 export default function InsightDetail() {
   const { slug } = useParams();
-  const article = getArticleById(slug);
-  const related = getRelatedArticles(slug, 3);
+  const fallbackArticle = getArticleById(slug);
+  const [article, setArticle] = useState(fallbackArticle || null);
+  const [related, setRelated] = useState(getRelatedArticles(slug, 3));
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -21,9 +29,61 @@ export default function InsightDetail() {
     };
   }, [slug]);
 
-  if (!article) {
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setNotFound(false);
+    setArticle(getArticleById(slug) || null);
+    setRelated(getRelatedArticles(slug, 3));
+
+    fetchBlogBySlug(slug)
+      .then(({ article: apiArticle, related: apiRelated }) => {
+        if (cancelled) return;
+        if (!apiArticle) {
+          if (!getArticleById(slug)) setNotFound(true);
+          return;
+        }
+        setArticle(apiArticle);
+        setRelated(apiRelated.length ? apiRelated : getRelatedArticles(slug, 3));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        if (!getArticleById(slug)) setNotFound(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
+  if (!loading && (notFound || !article)) {
     return <Navigate to="/insights" replace />;
   }
+
+  if (!article) {
+    return (
+      <>
+        <Header />
+        <MobileSideMenu />
+        <div id="app-wrapper" className="insight-detail-page studio-page" aria-busy="true">
+          <div id="app-content" className="studio-reveal-content">
+            <p style={{ padding: '6rem 1.5rem' }}>Loading article…</p>
+          </div>
+          <SiteFooter />
+        </div>
+      </>
+    );
+  }
+
+  const bodyIsHtml = isHtml(article.body);
+  const bodyParagraphs = Array.isArray(article.body)
+    ? article.body
+    : !bodyIsHtml && article.body
+      ? [article.body]
+      : [];
 
   return (
     <>
@@ -67,9 +127,13 @@ export default function InsightDetail() {
                 <img src={article.image} alt="" />
               </figure>
               <div className="id-article__body">
-                {article.body.map((paragraph) => (
-                  <p key={paragraph.slice(0, 48)}>{paragraph}</p>
-                ))}
+                {bodyIsHtml ? (
+                  <div dangerouslySetInnerHTML={{ __html: article.body }} />
+                ) : (
+                  bodyParagraphs.map((paragraph) => (
+                    <p key={String(paragraph).slice(0, 48)}>{paragraph}</p>
+                  ))
+                )}
               </div>
             </div>
           </article>
@@ -82,23 +146,26 @@ export default function InsightDetail() {
                   More Insights
                 </h2>
                 <div className="id-related__grid">
-                  {related.map((item) => (
-                    <article key={item.id} className="id-related__card">
-                      <Link to={`/insights/${item.id}`} className="id-related__media">
-                        <img src={item.image} alt="" loading="lazy" />
-                      </Link>
-                      <p className="id-related__date">{item.date}</p>
-                      <h3 className="id-related__title">
-                        <Link to={`/insights/${item.id}`}>{item.title}</Link>
-                      </h3>
-                      <Link to={`/insights/${item.id}`} className="insights-readmore">
-                        <span>Read More</span>
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                          <path d="M6 9l6 6 6-6" />
-                        </svg>
-                      </Link>
-                    </article>
-                  ))}
+                  {related.map((item) => {
+                    const itemSlug = item.slug || item.id;
+                    return (
+                      <article key={itemSlug} className="id-related__card">
+                        <Link to={`/insights/${itemSlug}`} className="id-related__media">
+                          <img src={item.image} alt="" loading="lazy" />
+                        </Link>
+                        <p className="id-related__date">{item.date}</p>
+                        <h3 className="id-related__title">
+                          <Link to={`/insights/${itemSlug}`}>{item.title}</Link>
+                        </h3>
+                        <Link to={`/insights/${itemSlug}`} className="insights-readmore">
+                          <span>Read More</span>
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                            <path d="M6 9l6 6 6-6" />
+                          </svg>
+                        </Link>
+                      </article>
+                    );
+                  })}
                 </div>
               </div>
             </section>

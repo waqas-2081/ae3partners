@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { normalizeAppPath } from '../../../api/cmsApi';
 import './ProcessSection.css';
 
 const P = process.env.PUBLIC_URL || '';
@@ -135,9 +136,31 @@ function useProcessMobileSwiper(carouselRef) {
   }, []);
 }
 
-export default function ProcessSection() {
+export default function ProcessSection({ data }) {
   const carouselRef = useRef(null);
   useProcessMobileSwiper(carouselRef);
+
+  const steps = useMemo(() => {
+    if (Array.isArray(data?.steps) && data.steps.length) {
+      return data.steps.map((step, index) => ({
+        n: step.number || String(index + 1).padStart(2, '0'),
+        title: step.title,
+        img: step.image || STEPS[index]?.img || '',
+        text: step.text,
+      }));
+    }
+    return STEPS;
+  }, [data]);
+
+  const subHeading = data?.sub_heading || 'How We Work';
+  const title = data?.title || 'A Process Built on';
+  const titleAccent = data?.title_accent || 'Partnership';
+  const description =
+    data?.description ||
+    'We tailor each engagement to client priorities with transparent planning, practical decision-making, and coordinated execution from concept to completion.';
+  const bottomText = data?.bottom_text || 'Ready to build something meaningful?';
+  const bottomLinkText = data?.bottom_link_text || "Let's start today";
+  const bottomLinkUrl = normalizeAppPath(data?.bottom_link_url || '/contact') || '/contact';
 
   return (
     <section className="ae3-process process-section overflow-hidden fade-wrapper">
@@ -156,23 +179,20 @@ export default function ProcessSection() {
               data-duration="0.9"
               data-stagger="0.03"
             >
-              How We Work
+              {subHeading}
             </h4>
             <h2 className="section-title cursor-effect title-2">
-              A Process Built on <span>Partnership</span>
+              {title} <span>{titleAccent}</span>
             </h2>
           </div>
           <div className="process-desc">
-            <p className="mb-0">
-              We tailor each engagement to client priorities with transparent planning, practical decision-making, and
-              coordinated execution from concept to completion.
-            </p>
+            <p className="mb-0">{description}</p>
           </div>
         </div>
 
         <div className="ae3-process__grid process-wrap fade-wrapper">
-          {STEPS.map((step) => (
-            <div className="ae3-process__grid-item" key={step.n}>
+          {steps.map((step) => (
+            <div className="ae3-process__grid-item" key={`${step.n}-${step.title}`}>
               <ProcessCard step={step} />
             </div>
           ))}
@@ -181,8 +201,8 @@ export default function ProcessSection() {
         <div className="ae3-process__slider">
           <div className="ae3-process__carousel swiper" ref={carouselRef}>
             <div className="swiper-wrapper">
-              {STEPS.map((step) => (
-                <div className="swiper-slide" key={step.n}>
+              {steps.map((step) => (
+                <div className="swiper-slide" key={`m-${step.n}-${step.title}`}>
                   <ProcessCard step={step} />
                 </div>
               ))}
@@ -193,7 +213,7 @@ export default function ProcessSection() {
 
         <div className="process-text">
           <h5 className="bottom-text">
-            Ready to build something meaningful? <Link to="/contact">Let&apos;s start today</Link>
+            {bottomText} <Link to={bottomLinkUrl}>{bottomLinkText}</Link>
           </h5>
         </div>
       </div>

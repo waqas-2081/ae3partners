@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import './TestimonialSection.css';
 
 const P = process.env.PUBLIC_URL || '';
@@ -30,7 +30,7 @@ const REVIEWS = [
   },
 ];
 
-function TestimonialPanel({ carouselRef }) {
+function TestimonialPanel({ carouselRef, reviews, badgeText, summary }) {
   return (
     <div
       className="testi-carousel-wrap slide-anim"
@@ -49,19 +49,16 @@ function TestimonialPanel({ carouselRef }) {
                 </li>
               ))}
             </ul>
-            <span>Focused on You</span>
+            <span>{badgeText}</span>
           </div>
         </div>
         <div className="right-content">
-          <p>
-            We offer collaborative, ego-free, tailored service with integrated architecture and
-            construction management that keeps projects on budget and schedule.
-          </p>
+          <p>{summary}</p>
         </div>
       </div>
       <div className="testi-carousel swiper ae3-testi__carousel" ref={carouselRef}>
         <div className="swiper-wrapper">
-          {REVIEWS.map((review) => (
+          {reviews.map((review) => (
             <div className="swiper-slide" key={`${review.name}-${review.role}`}>
               <div className="testi-item">
                 <p>&ldquo;{review.quote}&rdquo;</p>
@@ -151,9 +148,29 @@ function useTestimonialSwiper(carouselRef) {
   }, []);
 }
 
-export default function TestimonialSection() {
+export default function TestimonialSection({ data }) {
   const carouselRef = useRef(null);
   useTestimonialSwiper(carouselRef);
+
+  const reviews = useMemo(() => {
+    if (Array.isArray(data?.items) && data.items.length) {
+      return data.items.map((item) => ({
+        quote: item.quote,
+        name: item.name,
+        role: item.role,
+      }));
+    }
+    return REVIEWS;
+  }, [data]);
+
+  const subHeading = data?.sub_heading || 'Why Clients Choose AE3';
+  const title = data?.title || 'Partnerships Built on Trust.';
+  const titleAccent = data?.title_accent || 'Proven by Performance.';
+  const image = data?.image || `${P}/assets/newimages/whoweare1.jpg`;
+  const badgeText = data?.badge_text || 'Focused on You';
+  const summary =
+    data?.summary ||
+    'We offer collaborative, ego-free, tailored service with integrated architecture and construction management that keeps projects on budget and schedule.';
 
   return (
     <section className="ae3-testi testimonial-section fade-wrapper">
@@ -171,12 +188,12 @@ export default function TestimonialSection() {
                 data-duration="0.9"
                 data-stagger="0.03"
               >
-                Why Clients Choose AE3
+                {subHeading}
               </h4>
               <h2 className="section-title cursor-effect title-2">
-                Partnerships Built on Trust.
+                {title}
                 <br />
-                <span>Proven by Performance.</span>
+                <span>{titleAccent}</span>
               </h2>
             </div>
           </div>
@@ -190,11 +207,16 @@ export default function TestimonialSection() {
               data-offset="100"
               data-direction="left"
             >
-              <img src={`${P}/assets/newimages/whoweare1.jpg`} alt="AE3 Partners collaboration" />
+              <img src={image} alt="AE3 Partners collaboration" />
             </div>
           </div>
           <div className="col-lg-6">
-            <TestimonialPanel carouselRef={carouselRef} />
+            <TestimonialPanel
+              carouselRef={carouselRef}
+              reviews={reviews}
+              badgeText={badgeText}
+              summary={summary}
+            />
           </div>
         </div>
       </div>

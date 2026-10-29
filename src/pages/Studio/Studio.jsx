@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { fetchStudioContent, normalizeAppPath } from "../../api/cmsApi";
 import Header from "../Home/components/Header";
 import MobileSideMenu from "../Home/components/MobileSideMenu";
 import SiteFooter from "../../components/SiteFooter/SiteFooter";
@@ -295,7 +297,7 @@ const LEADERSHIP_MEMBERS = [
   },
 ];
 
-/** Group / studio life photos interleaved in the team mosaic */
+/** Group / firm life photos interleaved in the team mosaic */
 const TEAM_FEATURE_PHOTOS = [
   {
     id: "feature-1",
@@ -354,37 +356,40 @@ const TEAM_FEATURE_PHOTOS = [
   },
 ];
 
-/** Feature sliders alternate right → left → right → left → right (fills end blank) */
-const TEAM_FEATURE_SLIDERS = [
-  { side: "right", photos: TEAM_FEATURE_PHOTOS.slice(0, 2) },
-  { side: "left", photos: TEAM_FEATURE_PHOTOS.slice(2, 4) },
-  { side: "right", photos: TEAM_FEATURE_PHOTOS.slice(4, 6) },
-  { side: "left", photos: TEAM_FEATURE_PHOTOS.slice(6, 8) },
-  { side: "right", photos: TEAM_FEATURE_PHOTOS.slice(8) },
-];
+/** Mosaic: headshots + feature photo sliders (right / left / right…). */
+function buildTeamFeatureSliders(photos) {
+  const sides = ["right", "left", "right", "left", "right"];
+  const sliders = [];
+  for (let i = 0; i < photos.length; i += 2) {
+    const chunk = photos.slice(i, i + 2);
+    if (!chunk.length) break;
+    sliders.push({
+      side: sides[sliders.length % sides.length],
+      photos: chunk,
+    });
+  }
+  return sliders;
+}
 
-/**
- * Mosaic ends with last headshots + right team photo (no blank cell).
- * Alternating horizontal team photos: right, left, right, left, right.
- */
-const TEAM_MOSAIC = (() => {
+function buildTeamMosaic(members, featurePhotos) {
+  const featureSliders = buildTeamFeatureSliders(featurePhotos);
   const items = [];
   let m = 0;
   let f = 0;
 
   const pushMembers = (count) => {
-    for (let i = 0; i < count && m < KEY_TEAM_MEMBERS.length; i += 1, m += 1) {
+    for (let i = 0; i < count && m < members.length; i += 1, m += 1) {
       items.push({
         type: "member",
         key: `member-${m}`,
-        member: KEY_TEAM_MEMBERS[m],
+        member: members[m],
       });
     }
   };
 
   const pushFeature = () => {
-    if (f >= TEAM_FEATURE_SLIDERS.length) return;
-    const slot = TEAM_FEATURE_SLIDERS[f];
+    if (f >= featureSliders.length) return;
+    const slot = featureSliders[f];
     if (!slot.photos.length) return;
     items.push({
       type: "feature",
@@ -397,21 +402,23 @@ const TEAM_MOSAIC = (() => {
 
   pushMembers(4);
   pushMembers(2);
-  pushFeature(); // right
-  pushFeature(); // left
+  pushFeature();
+  pushFeature();
   pushMembers(2);
   pushMembers(4);
   pushMembers(2);
-  pushFeature(); // right
-  pushFeature(); // left
+  pushFeature();
+  pushFeature();
   pushMembers(2);
   pushMembers(2);
-  pushFeature(); // right — fills blank beside last headshots
+  pushFeature();
 
-  while (m < KEY_TEAM_MEMBERS.length) pushMembers(1);
+  while (m < members.length) pushMembers(1);
 
   return items;
-})();
+}
+
+const TEAM_MOSAIC = buildTeamMosaic(KEY_TEAM_MEMBERS, TEAM_FEATURE_PHOTOS);
 
 const JOB_OPENINGS = [
   {
@@ -430,7 +437,7 @@ const JOB_OPENINGS = [
     id: "revit-designer",
     title: "Revit Designer",
     summary:
-      "Designer with 5+ years at an architectural firm and strong Revit project experience in a collaborative studio environment.",
+      "Designer with 5+ years at an architectural firm and strong Revit project experience in a collaborative firm environment.",
     applyEmail: "ae3@ae3partners.com",
     body: [
       "AE3 is seeking a Designer with 5+ years of experience working at an architectural firm. The ideal candidate is technically proficient and has a minimum of five years actual project experience with Revit. If you are interested in a dynamic work environment that is collaborative and team-oriented, then we are looking for you.",
@@ -601,7 +608,7 @@ function TeamFeatureSlider({ photos, sliderKey, side = "right" }) {
   );
 }
 
-function useLeadershipSwiper(carouselRef) {
+function useLeadershipSwiper(carouselRef, slideCount = LEADERSHIP_MEMBERS.length) {
   useEffect(() => {
     const el = carouselRef.current;
     if (!el) return undefined;
@@ -637,7 +644,7 @@ function useLeadershipSwiper(carouselRef) {
         slidesPerView: 1,
         spaceBetween: 14,
         centeredSlides: false,
-        loop: LEADERSHIP_MEMBERS.length > 3,
+        loop: slideCount > 3,
         speed: 550,
         grabCursor: true,
         watchOverflow: true,
@@ -673,7 +680,7 @@ function useLeadershipSwiper(carouselRef) {
       window.clearTimeout(retryTimer);
       destroy();
     };
-  }, [carouselRef]);
+  }, [carouselRef, slideCount]);
 }
 
 export default function Studio() {
@@ -684,8 +691,7 @@ export default function Studio() {
   const leadershipSwiperRef = useRef(null);
   const [openWhy, setOpenWhy] = useState("");
   const [openCareer, setOpenCareer] = useState("senior-pm");
-
-  useLeadershipSwiper(leadershipSwiperRef);
+  const [cms, setCms] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -694,6 +700,121 @@ export default function Studio() {
       document.documentElement.classList.remove("studio-route");
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchStudioContent()
+      .then((data) => {
+        if (cancelled) return;
+        setCms(data || null);
+        const firstJobId = data?.careers?.items?.[0]?.id;
+        if (firstJobId) setOpenCareer(firstJobId);
+      })
+      .catch(() => {
+        if (!cancelled) setCms(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const intro = cms?.intro || {};
+  const about = cms?.about || {};
+  const careersMeta = cms?.careers || {};
+  const cta = cms?.cta || {};
+  const leadershipMeta = cms?.leadership || {};
+  const teamMeta = cms?.team || {};
+  const whyMeta = cms?.why || {};
+
+  const perspectiveItems = useMemo(() => {
+    const items = cms?.perspectives?.items;
+    if (!Array.isArray(items) || !items.length) return PERSPECTIVE_ITEMS;
+    return items.map((item, index) => ({
+      n: item.number || String(index + 1).padStart(2, "0"),
+      title: item.title,
+      body: item.body,
+      icon: item.icon || "life",
+    }));
+  }, [cms]);
+
+  const missionSlides = useMemo(() => {
+    const items = cms?.mission?.items;
+    if (!Array.isArray(items) || !items.length) return MISSION_SLIDES;
+    return items.map((item, index) => ({
+      id: `mission-${index}`,
+      n: item.number || String(index + 1).padStart(2, "0"),
+      title: item.title,
+      body: item.body,
+      image: item.image || MISSION_SLIDES[index]?.image || "",
+      theme: item.theme || (index % 2 ? "orange" : "navy"),
+    }));
+  }, [cms]);
+
+  const leadershipMembers = useMemo(() => {
+    const members = cms?.leadership?.members;
+    if (!Array.isArray(members) || !members.length) return LEADERSHIP_MEMBERS;
+    return members.map((member) => ({
+      name: member.name,
+      title: member.title,
+      image: member.image,
+    }));
+  }, [cms]);
+
+  useLeadershipSwiper(leadershipSwiperRef, leadershipMembers.length);
+
+  const teamMosaic = useMemo(() => {
+    const members = cms?.team?.members;
+    const photos = cms?.team?.feature_photos;
+    if (!Array.isArray(members) || !members.length) return TEAM_MOSAIC;
+    const mappedMembers = members.map((member) => ({
+      name: member.name,
+      title: member.title,
+      image: member.image,
+    }));
+    const mappedPhotos =
+      Array.isArray(photos) && photos.length
+        ? photos.map((photo, index) => ({
+            id: `feature-${index}`,
+            image: photo.image,
+            alt: photo.alt || "AE3 team photo",
+          }))
+        : TEAM_FEATURE_PHOTOS;
+    return buildTeamMosaic(mappedMembers, mappedPhotos);
+  }, [cms]);
+
+  const whyItems = useMemo(() => {
+    const items = cms?.why?.items;
+    if (!Array.isArray(items) || !items.length) return WHY_CHOOSE_ITEMS;
+    return items.map((item, index) => ({
+      n: item.number || String(index + 1).padStart(2, "0"),
+      title: item.title,
+      body: item.body,
+    }));
+  }, [cms]);
+
+  const jobOpenings = useMemo(() => {
+    const items = cms?.careers?.items;
+    if (!Array.isArray(items) || !items.length) return JOB_OPENINGS;
+    return items.map((item) => ({
+      id: item.id,
+      title: item.title,
+      summary: item.summary,
+      applyEmail: item.apply_email || item.applyEmail || "ae3@ae3partners.com",
+      body: Array.isArray(item.body) ? item.body : [],
+      bullets: Array.isArray(item.bullets) ? item.bullets : [],
+    }));
+  }, [cms]);
+
+  const ctaPrimaryLink = normalizeAppPath(cta.primary_link || "#studio-about") || "#studio-about";
+  const ctaSecondaryLink = normalizeAppPath(cta.secondary_link || "/contact") || "/contact";
+  const CtaPrimaryTag = ctaPrimaryLink.startsWith("/") ? Link : "a";
+  const ctaPrimaryProps = ctaPrimaryLink.startsWith("/")
+    ? { to: ctaPrimaryLink }
+    : { href: ctaPrimaryLink };
+  const CtaSecondaryTag = ctaSecondaryLink.startsWith("/") ? Link : "a";
+  const ctaSecondaryProps = ctaSecondaryLink.startsWith("/")
+    ? { to: ctaSecondaryLink }
+    : { href: ctaSecondaryLink };
 
   useEffect(() => {
     const el = mediaRef.current;
@@ -818,15 +939,18 @@ export default function Studio() {
         <div id="app-content" className="studio-reveal-content">
           <section className="studio-intro">
             <div className="studio-intro__inner">
-              <p className="studio-intro__eyebrow">Our Studio</p>
+              <p className="studio-intro__eyebrow">
+                {intro.eyebrow === "Our Studio"
+                  ? "Our Firm"
+                  : intro.eyebrow || "Our Firm"}
+              </p>
               <h2 className="studio-intro__heading studio-intro__heading--hero">
-                We love what we do.
+                {intro.heading || "We love what we do."}
               </h2>
-             
+
               <p className="studio-intro__tagline">
-                AE3 Partners is a full-service architecture, planning, and
-                construction management firm based in San Francisco, providing
-                services throughout California.
+                {intro.tagline ||
+                  "AE3 Partners is a full-service architecture, planning, and construction management firm based in San Francisco, providing services throughout California."}
               </p>
             </div>
 
@@ -834,8 +958,8 @@ export default function Studio() {
               <div className="studio-intro__media" ref={mediaRef}>
                 <div className="studio-intro__media-frame">
                   <img
-                    src={`${P}/assets/newimages/collagee.png`}
-                    alt="AE3 Partners architecture studio work"
+                    src={intro.image || `${P}/assets/newimages/collagee.png`}
+                    alt="AE3 Partners architecture firm work"
                     loading="lazy"
                   />
                 </div>
@@ -843,13 +967,11 @@ export default function Studio() {
 
               <div className="studio-intro__copy">
                 <h3 className="studio-intro__subheading">
-                  Embracing Unique Perspectives
+                  {intro.subheading || "Embracing Unique Perspectives"}
                 </h3>
                 <p className="studio-intro__body">
-                  Diversity and inclusion are not just buzzwords they are facts,
-                  woven into the ethos of our company. We know the power of
-                  differing perspectives on our projects and we welcome
-                  everyone&apos;s point of view.
+                  {intro.body ||
+                    "Diversity and inclusion are not just buzzwords they are facts, woven into the ethos of our company. We know the power of differing perspectives on our projects and we welcome everyone's point of view."}
                 </p>
               </div>
             </div>
@@ -860,7 +982,7 @@ export default function Studio() {
             aria-label="Culture and perspectives"
           >
             <div className="studio-perspectives__grid">
-              {PERSPECTIVE_ITEMS.map((item) => (
+              {perspectiveItems.map((item) => (
                 <article
                   key={item.n}
                   className={`studio-p-card studio-p-card--${item.icon}`}
@@ -885,7 +1007,7 @@ export default function Studio() {
               <div className="studio-hslide__header-gap" aria-hidden="true" />
               <div className="studio-hslide__viewport">
                 <div className="studio-hslide__track" ref={hslideTrackRef}>
-                  {MISSION_SLIDES.map((slide) => (
+                  {missionSlides.map((slide) => (
                     <article
                       key={slide.id}
                       className={`studio-hslide__card studio-hslide__card--${slide.theme}`}
@@ -921,15 +1043,12 @@ export default function Studio() {
           >
             <div className="studio-about__inner">
               <div className="studio-about__copy">
-                <h2 className="studio-about__heading">About Us</h2>
+                <h2 className="studio-about__heading">
+                  {about.heading || "About Us"}
+                </h2>
                 <p className="studio-about__text">
-                  AE3 Partners is a full service Architecture + Construction
-                  Management firm based in San Francisco, providing services
-                  throughout California. Our experience and insight in the
-                  realms of both architecture and construction management
-                  enables us to have a knowledgeable team on every project we
-                  pursue. This depth of understanding enables us to deliver
-                  unique services to our clients.
+                  {about.text ||
+                    "AE3 Partners is a full service Architecture + Construction Management firm based in San Francisco, providing services throughout California. Our experience and insight in the realms of both architecture and construction management enables us to have a knowledgeable team on every project we pursue. This depth of understanding enables us to deliver unique services to our clients."}
                 </p>
               </div>
 
@@ -937,7 +1056,9 @@ export default function Studio() {
                 <div className="studio-map">
                   <img
                     className="studio-map__img"
-                    src={`${P}/assets/newimages/studio-usa-map.png`}
+                    src={
+                      about.image || `${P}/assets/newimages/studio-usa-map.png`
+                    }
                     alt="United States map showing AE3 Partners office locations"
                     loading="lazy"
                   />
@@ -948,18 +1069,19 @@ export default function Studio() {
 
           <section className="studio-leadership" aria-label="Leadership Team">
             <div className="studio-leadership__head">
-              <p className="studio-leadership__eyebrow">AE3 TEAM</p>
-              <h2 className="studio-leadership__heading">Leadership Team</h2>
+              <p className="studio-leadership__eyebrow">
+                {leadershipMeta.eyebrow || "AE3 TEAM"}
+              </p>
+              <h2 className="studio-leadership__heading">
+                {leadershipMeta.heading || "Leadership Team"}
+              </h2>
               <p className="studio-leadership__text">
-                We wanted to create a workplace where inclusion and transparency
-                were the key elements to our success. With AE3, we&apos;ve been
-                able to build something special. Our team is our greatest asset
-                and it&apos;s because of them that we have succeeded and
-                continue to build strong relationships with our clients and in
-                our communities.
+                {leadershipMeta.text ||
+                  "We wanted to create a workplace where inclusion and transparency were the key elements to our success. With AE3, we've been able to build something special. Our team is our greatest asset and it's because of them that we have succeeded and continue to build strong relationships with our clients and in our communities."}
               </p>
               <p className="studio-leadership__byline-inline">
-                Rick L. Dumas and Doug Davis — Founders of AE3
+                {leadershipMeta.byline ||
+                  "Rick L. Dumas and Doug Davis — Founders of AE3"}
               </p>
             </div>
 
@@ -969,7 +1091,7 @@ export default function Studio() {
                 ref={leadershipSwiperRef}
               >
                 <div className="swiper-wrapper">
-                  {LEADERSHIP_MEMBERS.map((member) => (
+                  {leadershipMembers.map((member) => (
                     <div className="swiper-slide" key={member.name}>
                       <article className="studio-leadership__card">
                         <div className="studio-leadership__card-photo">
@@ -1001,21 +1123,17 @@ export default function Studio() {
           <section className="studio-team" aria-label="Key Team Members">
             <div className="studio-team__head">
               <h2 className="studio-team__heading">
-                Key <span>Team Members</span>
+                {teamMeta.heading || "Key"}{" "}
+                <span>{teamMeta.heading_accent || "Team Members"}</span>
               </h2>
               <p className="studio-team__intro">
-                Our team is a diverse and creative team of experts in the
-                architectural and construction management industry who bring a
-                wealth of knowledge and experience to every project. We proudly
-                employ an eclectic group of professionals, with roots around the
-                world with a range of perspectives. Our team approaches problems
-                in innovative ways, resulting in creative solutions that may not
-                have been considered otherwise.
+                {teamMeta.intro ||
+                  "Our team is a diverse and creative team of experts in the architectural and construction management industry who bring a wealth of knowledge and experience to every project. We proudly employ an eclectic group of professionals, with roots around the world with a range of perspectives. Our team approaches problems in innovative ways, resulting in creative solutions that may not have been considered otherwise."}
               </p>
             </div>
 
             <div className="studio-team__mosaic" aria-label="Team mosaic">
-              {TEAM_MOSAIC.map((item) =>
+              {teamMosaic.map((item) =>
                 item.type === "feature" ? (
                   <TeamFeatureSlider
                     key={item.key}
@@ -1033,20 +1151,17 @@ export default function Studio() {
           <section className="studio-why" aria-label="Why Choose AE3">
             <div className="studio-why__grid">
               <div className="studio-why__copy">
-                <h2 className="studio-why__heading">Why Choose AE3?</h2>
+                <h2 className="studio-why__heading">
+                  {whyMeta.heading || "Why Choose AE3?"}
+                </h2>
                 <p className="studio-why__text">
-                  AE3 Partners is a full service Architecture + Construction
-                  Management firm based in San Francisco, providing services
-                  throughout California. Our experience and insight in the
-                  realms of both architecture and construction management
-                  enables us to have a knowledgeable team on every project we
-                  pursue. This depth of understanding enables us to deliver
-                  unique services to our clients.
+                  {whyMeta.text ||
+                    "AE3 Partners is a full service Architecture + Construction Management firm based in San Francisco, providing services throughout California. Our experience and insight in the realms of both architecture and construction management enables us to have a knowledgeable team on every project we pursue. This depth of understanding enables us to deliver unique services to our clients."}
                 </p>
               </div>
 
               <div className="studio-why__accordion">
-                {WHY_CHOOSE_ITEMS.map((item) => {
+                {whyItems.map((item) => {
                   const isOpen = openWhy === item.n;
                   return (
                     <div
@@ -1078,20 +1193,22 @@ export default function Studio() {
           <section className="studio-careers" aria-label="Careers">
             <div className="studio-careers__inner">
               <header className="studio-careers__head">
-                <p className="studio-careers__eyebrow">Careers</p>
+                <p className="studio-careers__eyebrow">
+                  {careersMeta.eyebrow || "Careers"}
+                </p>
                 <h2 className="studio-careers__heading">
-                  Join Our Team and Design Your Career with AE3
+                  {careersMeta.heading ||
+                    "Join Our Team and Design Your Career with AE3"}
                 </h2>
                 <p className="studio-careers__lead">
-                  We love what we do. Explore current openings and grow with a
-                  collaborative, team-oriented studio across architecture and
-                  construction management.
+                  {careersMeta.lead ||
+                    "We love what we do. Explore current openings and grow with a collaborative, team-oriented firm across architecture and construction management."}
                 </p>
               </header>
 
               <div className="studio-careers__openings">
                 <div className="studio-careers__list">
-                  {JOB_OPENINGS.map((job, index) => {
+                  {jobOpenings.map((job, index) => {
                     const isOpen = openCareer === job.id;
                     return (
                       <article
@@ -1156,6 +1273,7 @@ export default function Studio() {
           <section className="studio-team-cta" aria-label="Our team culture">
             <div className="studio-team-cta__media">
               <video
+                key={cta.video || "cta-video"}
                 className="studio-team-cta__video"
                 autoPlay
                 muted
@@ -1165,37 +1283,35 @@ export default function Studio() {
                 aria-label="AE3 Partners team gathering together"
               >
                 <source
-                  src={`${P}/assets/newimages/cta.mp4`}
+                  src={cta.video || `${P}/assets/newimages/cta.mp4`}
                   type="video/mp4"
                 />
               </video>
             </div>
             <div className="studio-team-cta__body">
               <p className="studio-team-cta__text" ref={teamCtaTextRef}>
-                Our team is a diverse and driven group of builders,
-                tradespeople, and leaders who bring a wealth of knowledge and
-                experience to every project. Together, we&apos;re united in
-                creating spaces that leave a lasting impact.
+                {cta.text ||
+                  "Our team is a diverse and driven group of builders, tradespeople, and leaders who bring a wealth of knowledge and experience to every project. Together, we're united in creating spaces that leave a lasting impact."}
               </p>
               <div className="studio-team-cta__actions">
-                <a
+                <CtaPrimaryTag
                   className="studio-team-cta__btn studio-team-cta__btn--primary"
-                  href="#"
+                  {...ctaPrimaryProps}
                 >
-                  <span>Learn More About Our Team</span>
+                  <span>{cta.primary_text || "Learn More About Our Team"}</span>
                   <span className="studio-team-cta__arrow" aria-hidden="true">
                     →
                   </span>
-                </a>
-                <a
+                </CtaPrimaryTag>
+                <CtaSecondaryTag
                   className="studio-team-cta__btn studio-team-cta__btn--ghost"
-                  href="/contact"
+                  {...ctaSecondaryProps}
                 >
-                  <span>Join Our Team</span>
+                  <span>{cta.secondary_text || "Join Our Team"}</span>
                   <span className="studio-team-cta__arrow" aria-hidden="true">
                     →
                   </span>
-                </a>
+                </CtaSecondaryTag>
               </div>
             </div>
           </section>

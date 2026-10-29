@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { fetchHomeContent } from '../../api/cmsApi';
 import { ensureTemplateScriptsLoaded } from '../../template/loadTemplateScripts';
 import { reinitPageEffects } from '../../template/reinitPageEffects';
 import Preloader from './components/Preloader';
@@ -7,14 +8,11 @@ import MobileSideMenu from './components/MobileSideMenu';
 import HeroSection from './components/HeroSection';
 import ProjectShowcaseSection from './sections/ProjectShowcaseSection';
 import AboutSection from './sections/AboutSection';
-import FeatureSection from './sections/FeatureSection';
 import ProjectBigSection from './sections/ProjectBigSection';
 import CounterSection from './sections/CounterSection';
 import ProcessSection from './sections/ProcessSection';
-import ProjectCarouselSection from './sections/ProjectCarouselSection';
 import TestimonialSection from './sections/TestimonialSection';
 import SponsorSection from './sections/SponsorSection';
-import VideoSection from './sections/VideoSection';
 import BlogSection from './sections/BlogSection';
 import GallerySection from './sections/GallerySection';
 import SiteFooter from '../../components/SiteFooter/SiteFooter';
@@ -24,6 +22,7 @@ import './Home.css';
 
 export default function Home() {
   const [scriptsReady, setScriptsReady] = useState(false);
+  const [home, setHome] = useState(null);
 
   useEffect(() => {
     // Prevent browser scroll restoration from landing mid-page on refresh,
@@ -69,6 +68,20 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetchHomeContent()
+      .then((data) => {
+        if (!cancelled) setHome(data || null);
+      })
+      .catch(() => {
+        if (!cancelled) setHome(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div className="home-page">
       <Preloader />
@@ -77,19 +90,16 @@ export default function Home() {
 
       <div id="app-wrapper" className="studio-page">
         <div id="app-content" className="studio-reveal-content">
-          <HeroSection />
-          {/* <ProjectCarouselSection /> */}
+          <HeroSection data={home?.hero} />
           <ProjectShowcaseSection />
           <ProjectBigSection />
           <ValuesMotif variant="band" />
-          {/* <FeatureSection /> */}
-          <AboutSection />
-          <CounterSection />
-          <ProcessSection />
+          <AboutSection data={home?.about} />
+          <CounterSection data={home?.counters} />
+          <ProcessSection data={home?.process} />
           <ValuesMotif variant="band-dark" />
-          <TestimonialSection />
-          <SponsorSection />
-          {/* <VideoSection /> */}
+          <TestimonialSection data={home?.testimonials} />
+          <SponsorSection data={home?.sponsors} />
           <BlogSection />
           <GallerySection />
         </div>

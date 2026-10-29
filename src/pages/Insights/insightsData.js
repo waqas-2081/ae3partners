@@ -54,7 +54,7 @@ export const ARTICLES = [
   {
     id: '18-years',
     date: 'December 19, 2025',
-    category: 'Studio',
+    category: 'Our Firm',
     readTime: '3 min read',
     title: '18 Years of Design That Connects Us',
     excerpt:
@@ -63,14 +63,14 @@ export const ARTICLES = [
     body: [
       'Eighteen years of design that connects us — a milestone that celebrates people, partnerships, and projects built to strengthen communities across California.',
       'From civic campuses and education facilities to aviation and community-focused destinations, AE3’s work has always been about more than buildings. It is about places where people learn, gather, travel, and thrive.',
-      'Looking back, the through-line is clear: collaborative process, client-centered delivery, and a belief that good design should serve both today’s needs and tomorrow’s possibilities. Looking ahead, that same purpose continues to guide every studio conversation and every project team.',
+      'Looking back, the through-line is clear: collaborative process, client-centered delivery, and a belief that good design should serve both today’s needs and tomorrow’s possibilities. Looking ahead, that same purpose continues to guide every firm conversation and every project team.',
       'Thank you to the clients, partners, and team members who have shaped these eighteen years — and to the communities that inspire the next chapter.',
     ],
   },
   {
     id: '16-years',
     date: 'October 20, 2023',
-    category: 'Studio',
+    category: 'Our Firm',
     readTime: '3 min read',
     title: 'Celebrating 16 Years of Architectural Excellence',
     excerpt:
@@ -78,7 +78,7 @@ export const ARTICLES = [
     image: `${INSIGHTS_IMG}/16-years.jpg`,
     body: [
       'Sixteen years of architectural excellence mark a meaningful milestone for AE3 Partners — a celebration of craft, collaboration, and the communities we serve.',
-      'Over more than a decade and a half, the studio has grown through landmark projects and everyday dedication: listening closely, designing carefully, and delivering with integrity. Excellence, for AE3, is measured not only in form, but in trust earned over time.',
+      'Over more than a decade and a half, the firm has grown through landmark projects and everyday dedication: listening closely, designing carefully, and delivering with integrity. Excellence, for AE3, is measured not only in form, but in trust earned over time.',
       'This anniversary is a moment to thank our team and partners, and to reaffirm the values that continue to shape our practice — thoughtful design, sustainable intent, and construction insight that keeps projects grounded in reality.',
       'As we look forward, we carry the same ambition that started it all: create spaces that endure, inspire, and belong to the people who use them.',
     ],
