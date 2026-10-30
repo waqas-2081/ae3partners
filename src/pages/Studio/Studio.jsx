@@ -372,17 +372,20 @@ function buildTeamFeatureSliders(photos) {
 }
 
 function buildTeamMosaic(members, featurePhotos) {
+  const sortedMembers = [...(members || [])].sort((a, b) =>
+    (a?.name || "").localeCompare(b?.name || "", undefined, { sensitivity: "base" })
+  );
   const featureSliders = buildTeamFeatureSliders(featurePhotos);
   const items = [];
   let m = 0;
   let f = 0;
 
   const pushMembers = (count) => {
-    for (let i = 0; i < count && m < members.length; i += 1, m += 1) {
+    for (let i = 0; i < count && m < sortedMembers.length; i += 1, m += 1) {
       items.push({
         type: "member",
         key: `member-${m}`,
-        member: members[m],
+        member: sortedMembers[m],
       });
     }
   };
@@ -413,7 +416,7 @@ function buildTeamMosaic(members, featurePhotos) {
   pushMembers(2);
   pushFeature();
 
-  while (m < members.length) pushMembers(1);
+  while (m < sortedMembers.length) pushMembers(1);
 
   return items;
 }
